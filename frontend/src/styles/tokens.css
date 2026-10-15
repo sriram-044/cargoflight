@@ -1,0 +1,104 @@
+/* ==============================================================================
+   CARGOFLIGHT — Airport Cargo & Baggage Tracking System
+   Design Tokens & Modern Operations Color System
+   ============================================================================== */
+
+:root {
+  /* Surface & Page Backgrounds */
+  --bg-app: #F3F7FC;              /* Light aviation gray-blue page background */
+  --bg-surface: #FFFFFF;          /* Pure white card and container surface */
+  --bg-surface-hover: #F8FAFD;    /* Subtle hover state */
+  --bg-surface-active: #EDF3FA;   /* Active selection surface */
+  --bg-subtle: #F0F4FA;           /* Recessed panels and inputs */
+
+  /* Dark Navy Sidebar Palette */
+  --bg-sidebar: #06182D;          /* Navy sidebar background */
+  --bg-sidebar-dark: #03111F;     /* Deep dark navy header and accents */
+  --bg-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --bg-sidebar-active: #0878F9;   /* Active sidebar item */
+  --sidebar-text: #E2E8F0;
+  --sidebar-text-muted: #94A3B8;
+  --sidebar-border: #1E293B;
+
+  /* Typography Colors */
+  --text-primary: #14233B;        /* Deep slate navy body text */
+  --text-secondary: #334155;      /* Slate secondary label */
+  --text-muted: #64748B;          /* Muted helper text */
+  --text-disabled: #94A3B8;       /* Disabled control text */
+  --text-on-accent: #FFFFFF;      /* High contrast text on dark/blue */
+
+  /* Brand Colors - Electric Blue & Cyan */
+  --primary-blue: #0878F9;        /* CARGOFLIGHT Electric Blue primary */
+  --primary-main: #0878F9;
+  --primary-hover: #0665D4;
+  --primary-light: #EBF4FF;
+  --primary-50: #EFF6FF;
+  --primary-100: #DBEAFE;
+  --primary-500: #0878F9;
+  --primary-600: #0878F9;
+  --primary-700: #0665D4;
+
+  --electric-cyan: #00C2D7;       /* Cyan accent */
+  --cyan-accent: #00C2D7;
+  --cyan-subtle: #E0F9FD;
+  --cyan-border: #97E9F4;
+
+  /* Operational Status - Green / Orange / Red */
+  --success-main: #10B981;        /* Success green */
+  --success-bg: #ECFDF5;
+  --success-border: #A7F3D0;
+  --success-text: #065F46;
+
+  --warning-main: #F59E0B;        /* Warning orange */
+  --warning-bg: #FFFBEB;
+  --warning-border: #FDE68A;
+  --warning-text: #92400E;
+
+  --danger-main: #EF4444;         /* Error red */
+  --danger-bg: #FEF2F2;
+  --danger-border: #FECACA;
+  --danger-text: #991B1B;
+
+  --info-main: #00C2D7;
+  --info-bg: #F0FDFE;
+  --info-border: #BAF2F8;
+  --info-text: #0E7490;
+
+  /* Borders & Dividers */
+  --border-subtle: #E6EDF5;
+  --border-main: #D8E2EE;
+  --border-focus: #0878F9;
+
+  /* Box Shadows (Crisp aviation cards) */
+  --shadow-xs: 0 1px 2px 0 rgba(6, 24, 45, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(6, 24, 45, 0.06), 0 1px 2px -1px rgba(6, 24, 45, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(6, 24, 45, 0.07), 0 2px 4px -2px rgba(6, 24, 45, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(6, 24, 45, 0.08), 0 4px 6px -4px rgba(6, 24, 45, 0.03);
+
+  /* Border Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-display: 'Outfit', 'Inter', -apple-system, sans-serif;
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}

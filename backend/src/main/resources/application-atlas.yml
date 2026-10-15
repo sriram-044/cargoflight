@@ -1,0 +1,15 @@
+# ==============================================================================
+# CARGOFLIGHT - Dedicated MongoDB Atlas Profile
+# Activate via: mvn spring-boot:run -Dspring-boot.run.profiles=atlas
+# Requires environment variable: SPRING_DATA_MONGODB_URI
+# ==============================================================================
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI}
+      auto-index-creation: false
+
+aerotrace:
+  mongodb:
+    enabled: true

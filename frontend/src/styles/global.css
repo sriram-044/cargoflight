@@ -1,0 +1,220 @@
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--primary-600);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-700);
+}
+
+/* Typography styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+h1 { font-size: 1.625rem; letter-spacing: -0.02em; }
+h2 { font-size: 1.375rem; letter-spacing: -0.015em; }
+h3 { font-size: 1.125rem; letter-spacing: -0.01em; }
+h4 { font-size: 1rem; }
+
+/* Global Button System */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--primary-600);
+  color: var(--text-on-accent);
+  border-color: var(--primary-600);
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--primary-700);
+  border-color: var(--primary-700);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border-main);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+  border-color: var(--text-muted);
+}
+
+.btn-danger {
+  background-color: var(--danger-bg);
+  color: var(--danger-main);
+  border-color: var(--danger-border);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Form inputs & controls */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-md);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.form-error {
+  font-size: 0.75rem;
+  color: var(--danger-main);
+}
+
+/* Card Container */
+.card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-main);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-body {
+  padding: var(--space-5);
+}
+
+/* Table styles */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-main);
+}
+
+.table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
