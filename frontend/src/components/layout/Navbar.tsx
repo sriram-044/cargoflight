@@ -1,20 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Plane, User as UserIcon, LogOut, Clock, Database, Search, Bell, Settings, X, ExternalLink } from 'lucide-react';
+import { useExperienceMode } from '../../context/ExperienceModeContext';
+import {
+  Plane,
+  Luggage,
+  Sliders,
+  CheckCircle,
+  Clock,
+  Database,
+  Search,
+  Bell,
+  Settings,
+  X,
+  LogOut,
+  Sparkles,
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { mode, toggleMode, isSimple } = useExperienceMode();
   const navigate = useNavigate();
   const [istTime, setIstTime] = useState<string>('');
   const [globalSearch, setGlobalSearch] = useState<string>('');
   const [showNotifications, setShowNotifications] = useState<boolean>(false);
 
-  // Simulated operational notification list
+  // User-friendly flight & baggage update notifications
   const notifications = [
-    { id: 1, type: 'ALERT', text: 'Baggage tag MAA-73892 flagged for secondary security clearance inspection', time: '10m ago' },
-    { id: 2, type: 'INFO', text: 'Flight AI-508 arrived at Gate G14. Ground crew ready for unloading', time: '22m ago' },
-    { id: 3, type: 'SYSTEM', text: 'PostgreSQL analytical warehouse refreshed successfully (24 facts generated)', time: '45m ago' },
+    {
+      id: 1,
+      type: 'CHECK REQUIRED',
+      text: 'Baggage MAA-73892 was routed for a routine security inspection.',
+      time: '10m ago',
+      color: '#F59E0B',
+    },
+    {
+      id: 2,
+      type: 'FLIGHT ARRIVAL',
+      text: 'Flight AI-508 has landed at Gate G14. Baggage unloading is starting now.',
+      time: '22m ago',
+      color: '#0878F9',
+    },
+    {
+      id: 3,
+      type: 'SYSTEM OK',
+      text: 'All airport database records and baggage history are up to date.',
+      time: '45m ago',
+      color: '#10B981',
+    },
   ];
 
   useEffect(() => {
@@ -23,14 +56,13 @@ export const Navbar: React.FC = () => {
       const options: Intl.DateTimeFormatOptions = {
         timeZone: 'Asia/Kolkata',
         day: '2-digit',
-        month: '2-digit',
+        month: 'short',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
+        hour12: true,
       };
-      setIstTime(now.toLocaleString('en-GB', options) + ' IST');
+      setIstTime(now.toLocaleString('en-IN', options) + ' IST');
     };
     updateTime();
     const interval = setInterval(updateTime, 1000);
@@ -42,7 +74,7 @@ export const Navbar: React.FC = () => {
     const q = globalSearch.trim();
     if (!q) return;
 
-    if (q.toUpperCase().startsWith('AI-') || q.toUpperCase().startsWith('6E-') || q.toUpperCase().startsWith('SG-')) {
+    if (q.toUpperCase().startsWith('AI-') || q.toUpperCase().startsWith('6E-') || q.toUpperCase().startsWith('SG-') || q.toUpperCase().startsWith('UK-')) {
       navigate(`/flights?search=${encodeURIComponent(q)}`);
     } else {
       navigate(`/tracking?tag=${encodeURIComponent(q)}`);
@@ -53,7 +85,7 @@ export const Navbar: React.FC = () => {
   return (
     <header
       style={{
-        height: '64px',
+        height: '66px',
         backgroundColor: '#FFFFFF',
         borderBottom: '1px solid #E2E8F0',
         padding: '0 1.5rem',
@@ -67,16 +99,16 @@ export const Navbar: React.FC = () => {
       }}
     >
       {/* Left Section: Airport Hub Badge & Clock */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <div
           style={{
             display: 'inline-flex',
             alignItems: 'center',
             gap: '0.45rem',
-            padding: '0.3rem 0.75rem',
+            padding: '0.35rem 0.75rem',
             backgroundColor: '#EFF6FF',
             border: '1px solid #DBEAFE',
-            borderRadius: '6px',
+            borderRadius: '8px',
             fontSize: '0.75rem',
             fontWeight: 700,
             color: '#0878F9',
@@ -84,7 +116,7 @@ export const Navbar: React.FC = () => {
           }}
         >
           <Plane size={15} />
-          <span>CHENNAI HUB [MAA]</span>
+          <span>CHENNAI AIRPORT [MAA]</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748B', fontSize: '0.8125rem', fontWeight: 500 }}>
@@ -94,19 +126,19 @@ export const Navbar: React.FC = () => {
       </div>
 
       {/* Center Section: Global Search */}
-      <form onSubmit={handleGlobalSearch} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '320px' }}>
-        <Search size={15} style={{ position: 'absolute', left: '0.75rem', color: '#94A3B8' }} />
+      <form onSubmit={handleGlobalSearch} style={{ display: 'flex', alignItems: 'center', position: 'relative', width: '380px' }}>
+        <Search size={15} style={{ position: 'absolute', left: '0.85rem', color: '#94A3B8' }} />
         <input
           type="text"
           value={globalSearch}
           onChange={(e) => setGlobalSearch(e.target.value)}
-          placeholder="Global Search: Baggage Tag or Flight..."
+          placeholder="Track baggage number or search flight..."
           style={{
             width: '100%',
-            padding: '0.45rem 0.75rem 0.45rem 2.25rem',
+            padding: '0.5rem 0.85rem 0.5rem 2.4rem',
             fontSize: '0.8125rem',
             border: '1px solid #D8E2EE',
-            borderRadius: '8px',
+            borderRadius: '10px',
             backgroundColor: '#F8FAFD',
             color: '#14233B',
             outline: 'none',
@@ -125,8 +157,41 @@ export const Navbar: React.FC = () => {
         />
       </form>
 
-      {/* Right Section: Database Center link, Notifications, Profile, Account actions */}
+      {/* Right Section: Experience Mode Toggle, System Status, Notifications, User */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        {/* Simple Mode vs Operations Mode Switcher */}
+        <button
+          onClick={toggleMode}
+          title={isSimple ? 'Switch to Airport Operations Mode (for staff)' : 'Switch to Simple Mode (for passengers)'}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.45rem',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '20px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+            border: isSimple ? '1px solid #A7F3D0' : '1px solid #BFDBFE',
+            backgroundColor: isSimple ? '#ECFDF5' : '#EFF6FF',
+            color: isSimple ? '#065F46' : '#1E40AF',
+            transition: 'all 150ms ease',
+          }}
+        >
+          {isSimple ? (
+            <>
+              <Sparkles size={14} color="#059669" />
+              <span>Simple View</span>
+            </>
+          ) : (
+            <>
+              <Sliders size={14} color="#0878F9" />
+              <span>Operations View</span>
+            </>
+          )}
+        </button>
+
+        {/* System Status Link */}
         <Link
           to="/database-center"
           style={{
@@ -137,14 +202,15 @@ export const Navbar: React.FC = () => {
             fontWeight: 600,
             color: '#0878F9',
             padding: '0.35rem 0.75rem',
-            borderRadius: '6px',
+            borderRadius: '8px',
             backgroundColor: '#EFF6FF',
             border: '1px solid #DBEAFE',
             textDecoration: 'none',
           }}
+          title="View PostgreSQL, MongoDB & Neo4j real-time health"
         >
           <Database size={15} />
-          <span>3-DB Health</span>
+          <span>System Status</span>
         </Link>
 
         {/* Notifications Toggle */}
@@ -155,7 +221,7 @@ export const Navbar: React.FC = () => {
               border: '1px solid #E2E8F0',
               backgroundColor: '#FFFFFF',
               color: '#475569',
-              padding: '0.45rem',
+              padding: '0.5rem',
               borderRadius: '8px',
               cursor: 'pointer',
               display: 'flex',
@@ -163,9 +229,9 @@ export const Navbar: React.FC = () => {
               justifyContent: 'center',
               position: 'relative',
             }}
-            title="Operational Notifications"
+            title="Activity Updates"
           >
-            <Bell size={17} />
+            <Bell size={16} />
             <span
               style={{
                 position: 'absolute',
@@ -174,7 +240,7 @@ export const Navbar: React.FC = () => {
                 width: '8px',
                 height: '8px',
                 borderRadius: '50%',
-                backgroundColor: '#EF4444',
+                backgroundColor: '#0878F9',
                 border: '2px solid #FFFFFF',
               }}
             />
@@ -184,19 +250,19 @@ export const Navbar: React.FC = () => {
             <div
               style={{
                 position: 'absolute',
-                top: '42px',
+                top: '46px',
                 right: 0,
-                width: '320px',
+                width: '340px',
                 backgroundColor: '#FFFFFF',
-                borderRadius: '8px',
+                borderRadius: '10px',
                 boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
                 border: '1px solid #E2E8F0',
-                padding: '0.75rem',
+                padding: '0.85rem',
                 zIndex: 50,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.5rem', borderBottom: '1px solid #F1F5F9' }}>
-                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#14233B' }}>Flight Operations Alerts</span>
+                <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#14233B' }}>Flight & Baggage Updates</span>
                 <button
                   onClick={() => setShowNotifications(false)}
                   style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: '#94A3B8' }}
@@ -206,9 +272,9 @@ export const Navbar: React.FC = () => {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
                 {notifications.map((n) => (
-                  <div key={n.id} style={{ padding: '0.45rem 0.5rem', backgroundColor: '#F8FAFD', borderRadius: '6px', fontSize: '0.75rem' }}>
+                  <div key={n.id} style={{ padding: '0.5rem 0.65rem', backgroundColor: '#F8FAFD', borderRadius: '8px', fontSize: '0.75rem', borderLeft: `3px solid ${n.color}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B', fontSize: '0.7rem' }}>
-                      <span style={{ fontWeight: 600, color: n.type === 'ALERT' ? '#EF4444' : '#0878F9' }}>{n.type}</span>
+                      <span style={{ fontWeight: 700, color: n.color }}>{n.type}</span>
                       <span>{n.time}</span>
                     </div>
                     <div style={{ color: '#1E293B', marginTop: '0.2rem', lineHeight: 1.35 }}>{n.text}</div>
@@ -226,27 +292,27 @@ export const Navbar: React.FC = () => {
             border: '1px solid #E2E8F0',
             backgroundColor: '#FFFFFF',
             color: '#475569',
-            padding: '0.45rem',
+            padding: '0.5rem',
             borderRadius: '8px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             textDecoration: 'none',
           }}
-          title="System Settings"
+          title="Application Settings"
         >
-          <Settings size={17} />
+          <Settings size={16} />
         </Link>
 
         {/* User Profile */}
         {user ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                padding: '0.3rem 0.75rem',
+                padding: '0.35rem 0.75rem',
                 borderRadius: '8px',
                 backgroundColor: '#F8FAFD',
                 border: '1px solid #E2E8F0',
@@ -273,18 +339,18 @@ export const Navbar: React.FC = () => {
                   {user.fullName || user.username}
                 </div>
                 <div style={{ fontSize: '0.6875rem', fontWeight: 600, color: '#0878F9' }}>
-                  {user.role}
+                  {user.role === 'SYSTEM_ADMIN' ? 'System Administrator' : user.role.replace(/_/g, ' ')}
                 </div>
               </div>
             </div>
 
             <button
               onClick={logout}
-              title="Refresh CARGOFLIGHT Operator Session"
+              title="Refresh / Reconnect Operator Session"
               className="btn btn-secondary btn-sm"
-              style={{ padding: '0.45rem', display: 'flex', alignItems: 'center' }}
+              style={{ padding: '0.5rem', display: 'flex', alignItems: 'center' }}
             >
-              <LogOut size={16} />
+              <LogOut size={15} />
             </button>
           </div>
         ) : (
@@ -299,7 +365,7 @@ export const Navbar: React.FC = () => {
               border: '1px solid #BFDBFE',
             }}
           >
-            CARGOFLIGHT Ops
+            FlyTrack Guest
           </div>
         )}
       </div>

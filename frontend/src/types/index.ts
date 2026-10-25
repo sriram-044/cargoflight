@@ -105,7 +105,8 @@ export interface RouteCalculationRequest {
   originPointId: string;
   destinationPointId: string;
   blockedConnectionIds?: string[];
-  objective?: 'DISTANCE' | 'TIME';
+  objective?: string;
+  optimizationObjective?: string;
 }
 
 export interface BaggageTransitionRequest {
@@ -134,9 +135,28 @@ export interface WarehouseRefreshResponse {
 export interface RouteEdge {
   fromId: string;
   toId: string;
+  fromName?: string;
+  toName?: string;
   distanceMeters: number;
   estimatedSeconds: number;
+  speedMetersPerSecond?: number;
   active: boolean;
+  status?: string;
+  restrictionNotes?: string;
+}
+
+export interface AlternativeRoute {
+  routeId: string;
+  label: string;
+  recommended: boolean;
+  available: boolean;
+  orderedPath: HandlingPoint[];
+  edges: RouteEdge[];
+  totalDistanceMeters: number;
+  estimatedTraversalSeconds: number;
+  deltaDistanceMeters?: number;
+  deltaSeconds?: number;
+  description?: string;
 }
 
 export interface RouteResponse {
@@ -150,6 +170,12 @@ export interface RouteResponse {
   routingEngine: string;
   reroutedDueToBlockage: boolean;
   message: string;
+  explanation?: string;
+  optimizationObjective?: string;
+  blockedSegmentsAvoidedCount?: number;
+  conveyorSegmentCount?: number;
+  handlingPointCount?: number;
+  alternatives?: AlternativeRoute[];
 }
 
 export interface ScannerEventRequest {

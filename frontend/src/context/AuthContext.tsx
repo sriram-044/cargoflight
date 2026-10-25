@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { User } from '../types';
-import { api } from '../services/api';
+import { api, isTokenExpired } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -28,41 +28,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('aerotrace_token');
+    const savedToken = localStorage.getItem('aerotrace_token');
+    return savedToken && !isTokenExpired(savedToken) ? savedToken : null;
   });
 
   const hasInitRun = useRef(false);
 
-  // Auto-connect to backend demo session once on mount if token is absent
+  // Auto-connect to backend demo session once on mount if token is absent or expired
   useEffect(() => {
-    if (hasInitRun.current) return;
-    hasInitRun.current = true;
-
-    const initDemoSession = async () => {
-      const existingToken = localStorage.getItem('aerotrace_token');
-      if (existingToken) {
-        setToken(existingToken);
-        return;
-      }
-
-      try {
-        const res = await api.getDemoSession();
-        const authUser: User = {
-          username: res.username,
-          fullName: res.fullName,
-          role: res.role,
-          airport: res.airport,
-        };
-        setUser(authUser);
-        setToken(res.token);
-        localStorage.setItem('aerotrace_token', res.token);
-        localStorage.setItem('aerotrace_user', JSON.stringify(authUser));
-      } catch (err) {
-        console.info('CARGOFLIGHT Demo Session initialization note:', err);
+    const handleAuthUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        if (customEvent.detail.token) setToken(customEvent.detail.token);
+        if (customEvent.detail.user) setUser(customEvent.detail.user);
       }
     };
+    window.addEventListener('aerotrace_auth_updated', handleAuthUpdated);
 
-    initDemoSession();
+    if (!hasInitRun.current) {
+      hasInitRun.current = true;
+
+      const initDemoSession = async () => {
+        const existingToken = localStorage.getItem('aerotrace_token');
+        if (existingToken && !isTokenExpired(existingToken)) {
+          setToken(existingToken);
+          return;
+        }
+
+        try {
+          const res = await api.getDemoSession();
+          const authUser: User = {
+            username: res.username,
+            fullName: res.fullName,
+            role: res.role,
+            airport: res.airport,
+          };
+          setUser(authUser);
+          setToken(res.token);
+          localStorage.setItem('aerotrace_token', res.token);
+          localStorage.setItem('aerotrace_user', JSON.stringify(authUser));
+        } catch (err) {
+          console.info('CARGOFLIGHT Demo Session initialization note:', err);
+        }
+      };
+
+      initDemoSession();
+    }
+
+    return () => window.removeEventListener('aerotrace_auth_updated', handleAuthUpdated);
   }, []);
 
   const login = async (username: string, password: string) => {

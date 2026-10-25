@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getFriendlyLocationName } from '../../services/locationMapping';
 
 export const FlightsPage: React.FC = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
@@ -60,7 +61,7 @@ export const FlightsPage: React.FC = () => {
       const data = await api.getFlights();
       setFlights(data);
     } catch (err: any) {
-      setError('Failed to load flights: ' + err.message);
+      setError('Failed to load flights: ' + (err.message || 'Service unavailable'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +78,7 @@ export const FlightsPage: React.FC = () => {
       const bags = await api.getFlightBaggage(flight.id);
       setFlightBaggage(bags);
     } catch (err) {
-      console.error('Failed to load flight baggage manifest', err);
+      console.error('Failed to load flight baggage list', err);
     } finally {
       setLoadingBaggage(false);
     }
@@ -106,7 +107,7 @@ export const FlightsPage: React.FC = () => {
         totalExpectedBags: 120,
       });
     } catch (err: any) {
-      setCreateFeedback(err.message || 'Failed to schedule flight');
+      setCreateFeedback(err.message || 'Failed to add flight');
     } finally {
       setSubmittingFlight(false);
     }
@@ -123,73 +124,91 @@ export const FlightsPage: React.FC = () => {
   });
 
   return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <PlaneTakeoff size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              Flight Operations & Cargo Manifests
-            </h1>
+    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Aviation Flights Hero Header */}
+      <div className="airport-hero">
+        <div className="airport-hero-content">
+          <div className="airport-hero-badge">
+            <PlaneTakeoff size={14} /> Flight Management & Baggage Loading
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Authoritative flight schedule, departure reconciliation, and baggage loading progress at Chennai Hub (MAA).
+          <h1 className="airport-hero-title">
+            Flights
+          </h1>
+          <p className="airport-hero-subtitle">
+            Monitor real-time commercial passenger flights, departure gate assignments, and baggage hold loading progress at Chennai Hub (MAA).
           </p>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button onClick={loadFlights} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', position: 'relative', zIndex: 2 }}>
+          <button onClick={loadFlights} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#FFFFFF', borderColor: 'rgba(255, 255, 255, 0.25)', backdropFilter: 'blur(4px)' }}>
             <RefreshCw size={14} className={loading ? 'spin' : ''} />
-            <span>Refresh Schedule</span>
+            <span>Refresh Flights</span>
           </button>
           {canManage && (
             <button
               onClick={() => setShowCreateModal(true)}
               className="btn btn-primary btn-sm"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#0878F9', borderColor: '#0878F9', boxShadow: '0 0 14px rgba(8, 120, 249, 0.4)' }}
             >
               <PlusCircle size={15} />
-              <span>Schedule Flight</span>
+              <span>Add New Flight</span>
             </button>
           )}
         </div>
       </div>
 
+      {/* Flight Summary Stats Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+        <div className="stat-card" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase' }}>Total Flights</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0F172A', marginTop: '0.2rem' }}>{flights.length}</div>
+          <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '0.25rem' }}>Chennai Airport Active Flights</div>
+        </div>
+        <div className="stat-card" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase' }}>Departed / In Flight</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#10B981', marginTop: '0.2rem' }}>
+            {flights.filter((f) => f.status === 'DEPARTED' || f.status === 'ARRIVED').length}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: '#10B981', marginTop: '0.25rem' }}>Airborne or arrived at destination</div>
+        </div>
+        <div className="stat-card" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase' }}>Scheduled / Boarding</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0878F9', marginTop: '0.2rem' }}>
+            {flights.filter((f) => f.status === 'SCHEDULED' || f.status === 'BOARDING' || f.status === 'ACTIVE').length}
+          </div>
+          <div style={{ fontSize: '0.7rem', color: '#0878F9', marginTop: '0.25rem' }}>Currently loading or pre-flight</div>
+        </div>
+        <div className="stat-card" style={{ padding: '1rem 1.25rem' }}>
+          <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748B', textTransform: 'uppercase' }}>Baggage Loading Avg</div>
+          <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#00C2D7', marginTop: '0.2rem' }}>
+            {flights.length > 0 ? Math.round(flights.reduce((acc, f) => acc + (f.loadingProgressPercent || 0), 0) / flights.length) : 0}%
+          </div>
+          <div style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '0.25rem' }}>Fleet average hold loading</div>
+        </div>
+      </div>
+
       {/* Filter / Search Bar */}
-      <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+      <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem', backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 2px 6px rgba(6, 24, 45, 0.04)' }}>
         <div style={{ position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '0.65rem', color: '#94A3B8' }} />
+          <Search size={16} style={{ position: 'absolute', left: '0.85rem', top: '0.75rem', color: '#94A3B8' }} />
           <input
             type="text"
             className="form-input"
-            style={{ paddingLeft: '2.25rem' }}
+            style={{ paddingLeft: '2.5rem', height: '42px', fontSize: '0.9rem', borderRadius: '8px' }}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search flights by flight number (e.g. 6E-2041, AI-440), airline, or origin/destination..."
+            placeholder="Search flights by flight number (e.g. 6E-2041, AI-440), airline, or destination..."
           />
         </div>
 
-        {/* Status Pills */}
-        <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto' }}>
+        {/* Status Filter Pills */}
+        <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', flexWrap: 'wrap' }}>
           {['ALL', 'SCHEDULED', 'BOARDING', 'ACTIVE', 'DEPARTED', 'ARRIVED', 'DELAYED'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
               style={{
-                padding: '0.35rem 0.75rem',
+                padding: '0.35rem 0.85rem',
                 borderRadius: '16px',
                 fontSize: '0.75rem',
                 fontWeight: statusFilter === st ? 700 : 500,
@@ -197,74 +216,79 @@ export const FlightsPage: React.FC = () => {
                 backgroundColor: statusFilter === st ? '#EFF6FF' : '#FFFFFF',
                 color: statusFilter === st ? '#0878F9' : '#475569',
                 cursor: 'pointer',
+                transition: 'all 120ms ease',
               }}
             >
-              {st}
+              {st === 'ALL' ? 'All Flights' : st.replace(/_/g, ' ')}
             </button>
           ))}
         </div>
       </div>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', color: '#EF4444' }}>
+        <div style={{ padding: '1rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', color: '#EF4444' }}>
           {error}
         </div>
       )}
 
       {loading ? (
         <LoadingSkeleton rows={5} />
+      ) : filteredFlights.length === 0 ? (
+        <div className="card" style={{ padding: '3rem', textAlign: 'center', color: '#64748B', backgroundColor: '#FFFFFF', borderRadius: '12px' }}>
+          <PlaneTakeoff size={36} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
+          <div style={{ fontSize: '1rem', fontWeight: 600, color: '#1E293B' }}>No matching flights found</div>
+          <div style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Try clearing the search query or selecting a different status filter.</div>
+        </div>
       ) : (
-        <div className="card">
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '12px', boxShadow: '0 2px 8px rgba(6, 24, 45, 0.04)' }}>
           <div className="table-responsive">
-            <table className="table">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>Flight</th>
-                  <th>Route</th>
-                  <th>Scheduled Departure</th>
-                  <th>Terminal & Gate</th>
-                  <th>Status</th>
-                  <th>Baggage Loading Progress</th>
-                  <th>Actions</th>
+                <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem' }}>
+                  <th style={{ padding: '0.75rem 1rem' }}>Flight</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Route</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Departure Time</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Gate</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Flight Status</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Baggage Loading Progress</th>
+                  <th style={{ padding: '0.75rem 1rem' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredFlights.map((f) => (
-                  <tr key={f.id}>
-                    <td>
+                  <tr key={f.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '0.75rem 1rem' }}>
                       <div style={{ fontWeight: 800, color: '#0878F9', fontSize: '0.95rem' }}>
                         {f.flightNumber}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748B' }}>{f.airlineName}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>{f.airlineName}</div>
                     </td>
-                    <td>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700 }}>
-                        <span style={{ color: '#14233B' }}>{f.originIata}</span>
-                        <ArrowRight size={13} color="#94A3B8" />
-                        <span style={{ color: '#14233B' }}>{f.destinationIata}</span>
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                        <span className="airport-code-tag">{f.originIata}</span>
+                        <ArrowRight size={13} color="#0878F9" />
+                        <span className="airport-code-tag">{f.destinationIata}</span>
                       </div>
                     </td>
-                    <td style={{ fontSize: '0.8125rem', color: '#334155' }}>
-                      {new Date(f.scheduledDeparture).toLocaleString('en-GB', {
+                    <td style={{ padding: '0.75rem 1rem', fontSize: '0.8rem', color: '#334155' }}>
+                      {new Date(f.scheduledDeparture).toLocaleTimeString('en-IN', {
                         timeZone: 'Asia/Kolkata',
-                        day: '2-digit',
-                        month: '2-digit',
                         hour: '2-digit',
                         minute: '2-digit',
-                        hour12: false,
+                        hour12: true,
                       })}{' '}
                       IST
                     </td>
-                    <td>
-                      <span style={{ fontWeight: 600 }}>T{f.terminal}</span> &bull; Gate {f.gate}
+                    <td style={{ padding: '0.75rem 1rem' }}>
+                      <span style={{ fontWeight: 600 }}>Terminal {f.terminal}</span> &bull; Gate {f.gate}
                     </td>
-                    <td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
                       <StatusBadge status={f.status} size="sm" />
                     </td>
-                    <td style={{ minWidth: '180px' }}>
+                    <td style={{ padding: '0.75rem 1rem', minWidth: '180px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.25rem' }}>
                         <span style={{ fontWeight: 600 }}>
-                          {f.totalLoadedBags} / {f.totalExpectedBags} bags
+                          {f.totalLoadedBags} / {f.totalExpectedBags} loaded
                         </span>
                         <span style={{ color: '#0878F9', fontWeight: 700 }}>{f.loadingProgressPercent}%</span>
                       </div>
@@ -273,22 +297,22 @@ export const FlightsPage: React.FC = () => {
                           style={{
                             width: `${f.loadingProgressPercent}%`,
                             height: '100%',
-                            backgroundColor: f.loadingProgressPercent === 100 ? '#10B981' : '#0878F9',
-                            transition: 'width 300ms ease',
+                            backgroundColor: f.loadingProgressPercent >= 100 ? '#10B981' : '#0878F9',
+                            transition: 'width 250ms ease',
                           }}
                         />
                       </div>
                     </td>
-                    <td>
+                    <td style={{ padding: '0.75rem 1rem' }}>
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button
                           onClick={() => openFlightDetails(f)}
                           className="btn btn-secondary btn-sm"
                           style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem' }}
-                          title="View Baggage Manifest"
+                          title="View Baggage List"
                         >
                           <Eye size={13} />
-                          <span>Manifest</span>
+                          <span>Baggage List</span>
                         </button>
                         <Link
                           to={`/registration?flightId=${f.id}`}
@@ -308,7 +332,7 @@ export const FlightsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Flight Detail & Manifest Modal */}
+      {/* Flight Detail & Baggage List Modal */}
       {selectedFlight && (
         <div
           style={{
@@ -335,14 +359,16 @@ export const FlightsPage: React.FC = () => {
               flexDirection: 'column',
               backgroundColor: '#FFFFFF',
               boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.25)',
+              borderRadius: '12px',
+              overflow: 'hidden',
             }}
           >
-            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF' }}>
+            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>
-                  Flight {selectedFlight.flightNumber} Manifest & Baggage Loading
+                <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>
+                  Flight {selectedFlight.flightNumber} Baggage List
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.2rem' }}>
                   {selectedFlight.airlineName} &bull; {selectedFlight.originIata} &rarr; {selectedFlight.destinationIata} &bull; Terminal {selectedFlight.terminal} Gate {selectedFlight.gate}
                 </div>
               </div>
@@ -354,34 +380,34 @@ export const FlightsPage: React.FC = () => {
               </button>
             </div>
 
-            <div style={{ padding: '1rem 1.5rem', flex: 1, overflowY: 'auto' }}>
+            <div style={{ padding: '1.25rem 1.5rem', flex: 1, overflowY: 'auto' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <div style={{ padding: '0.75rem', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>STATUS</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>FLIGHT STATUS</div>
                   <div style={{ fontWeight: 800, color: '#0878F9' }}>{selectedFlight.status}</div>
                 </div>
                 <div style={{ padding: '0.75rem', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>EXPECTED</div>
-                  <div style={{ fontWeight: 800, color: '#14233B' }}>{selectedFlight.totalExpectedBags} bags</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>EXPECTED BAGS</div>
+                  <div style={{ fontWeight: 800, color: '#14233B' }}>{selectedFlight.totalExpectedBags}</div>
                 </div>
                 <div style={{ padding: '0.75rem', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>LOADED</div>
-                  <div style={{ fontWeight: 800, color: '#10B981' }}>{selectedFlight.totalLoadedBags} bags</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>LOADED ON FLIGHT</div>
+                  <div style={{ fontWeight: 800, color: '#10B981' }}>{selectedFlight.totalLoadedBags}</div>
                 </div>
                 <div style={{ padding: '0.75rem', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>PROGRESS</div>
+                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>LOADING PROGRESS</div>
                   <div style={{ fontWeight: 800, color: '#0878F9' }}>{selectedFlight.loadingProgressPercent}%</div>
                 </div>
               </div>
 
               <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.75rem', color: '#14233B' }}>
-                Manifested Baggage Units ({flightBaggage.length})
+                Baggage for this Flight ({flightBaggage.length})
               </div>
 
               {loadingBaggage ? (
                 <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
                   <RefreshCw size={20} className="spin" style={{ margin: '0 auto 0.5rem' }} />
-                  <div>Querying flight baggage manifest...</div>
+                  <div>Loading baggage items...</div>
                 </div>
               ) : flightBaggage.length === 0 ? (
                 <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
@@ -397,35 +423,40 @@ export const FlightsPage: React.FC = () => {
                 </div>
               ) : (
                 <div className="table-responsive">
-                  <table className="table">
+                  <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr>
-                        <th>Tag</th>
-                        <th>Passenger</th>
-                        <th>Weight</th>
-                        <th>Stage</th>
-                        <th>Location</th>
-                        <th>Track</th>
+                      <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem' }}>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Tag</th>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Passenger</th>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Weight</th>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Status</th>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Location</th>
+                        <th style={{ padding: '0.65rem 0.75rem' }}>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {flightBaggage.map((b) => (
-                        <tr key={b.id}>
-                          <td style={{ fontWeight: 700, color: '#0878F9' }}>{b.baggageTag}</td>
-                          <td>
+                        <tr key={b.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                          <td style={{ padding: '0.65rem 0.75rem', fontWeight: 700, color: '#0878F9' }}>{b.baggageTag}</td>
+                          <td style={{ padding: '0.65rem 0.75rem' }}>
                             <div>{b.passengerName}</div>
                             <div style={{ fontSize: '0.7rem', color: '#64748B' }}>PNR: {b.passengerPnr}</div>
                           </td>
-                          <td>{b.weightKg} kg</td>
-                          <td>
-                            <span style={{ fontWeight: 700, fontSize: '0.75rem', color: b.currentStatus === 'LOADED' ? '#10B981' : '#0878F9' }}>
-                              {b.currentStatus}
-                            </span>
+                          <td style={{ padding: '0.65rem 0.75rem' }}>{b.weightKg} kg</td>
+                          <td style={{ padding: '0.65rem 0.75rem' }}>
+                            <StatusBadge status={b.currentStatus} size="sm" />
                           </td>
-                          <td style={{ fontSize: '0.75rem', color: '#475569' }}>
-                            {b.currentHandlingPointName || b.currentHandlingPointId || 'N/A'}
+                          <td style={{ padding: '0.65rem 0.75rem', fontSize: '0.75rem', color: '#475569' }}>
+                            <div style={{ fontWeight: 600, color: '#0F172A' }}>
+                              {getFriendlyLocationName(b.currentHandlingPointId, b.currentHandlingPointName)}
+                            </div>
+                            {b.currentHandlingPointId && (
+                              <div style={{ fontSize: '0.675rem', color: '#94A3B8', fontFamily: 'monospace' }}>
+                                {b.currentHandlingPointId}
+                              </div>
+                            )}
                           </td>
-                          <td>
+                          <td style={{ padding: '0.65rem 0.75rem' }}>
                             <Link to={`/tracking?tag=${b.baggageTag}`} className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.5rem', fontSize: '0.7rem' }}>
                               Track
                             </Link>
@@ -447,7 +478,7 @@ export const FlightsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Schedule Flight Modal */}
+      {/* Add Flight Modal */}
       {showCreateModal && (
         <div
           style={{
@@ -464,9 +495,9 @@ export const FlightsPage: React.FC = () => {
             padding: '1.5rem',
           }}
         >
-          <div className="card" style={{ width: '100%', maxWidth: '540px', backgroundColor: '#FFFFFF' }}>
-            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF' }}>
-              <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>Schedule New Cargo/Passenger Flight</div>
+          <div className="card" style={{ width: '100%', maxWidth: '540px', backgroundColor: '#FFFFFF', borderRadius: '12px', overflow: 'hidden' }}>
+            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>Schedule New Flight</div>
               <button
                 onClick={() => setShowCreateModal(false)}
                 style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', fontSize: '1.25rem' }}
@@ -508,7 +539,7 @@ export const FlightsPage: React.FC = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
-                  <label className="form-label">Origin IATA</label>
+                  <label className="form-label">Origin (Airport Code)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -518,7 +549,7 @@ export const FlightsPage: React.FC = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Destination IATA</label>
+                  <label className="form-label">Destination (Airport Code)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -553,7 +584,7 @@ export const FlightsPage: React.FC = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Total Expected Baggage Units</label>
+                <label className="form-label">Expected Total Baggage</label>
                 <input
                   type="number"
                   min="1"

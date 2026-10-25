@@ -3,6 +3,7 @@ import { api } from '../../services/api';
 import { AnalyticsSummary } from '../../types';
 import { StatCard } from '../../components/ui/StatCard';
 import { LoadingSkeleton } from '../../components/feedback/LoadingSkeleton';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import {
   BarChart3,
   Download,
@@ -15,6 +16,11 @@ import {
   PlaneTakeoff,
   RefreshCw,
   Zap,
+  Luggage,
+  Calendar,
+  Activity,
+  Layers,
+  ArrowUpRight,
 } from 'lucide-react';
 
 export const AnalyticsPage: React.FC = () => {
@@ -32,7 +38,7 @@ export const AnalyticsPage: React.FC = () => {
       const data = await api.getAnalyticsSummary();
       setMetrics(data);
     } catch (err: any) {
-      setError('Failed to load operational analytics: ' + err.message);
+      setError('Failed to load activity reports: ' + (err.message || 'Service unavailable'));
     } finally {
       setLoading(false);
     }
@@ -44,7 +50,7 @@ export const AnalyticsPage: React.FC = () => {
       const data = await api.getWarehouseMetrics();
       setWarehouseData(data);
     } catch (err: any) {
-      console.warn('Warehouse OLAP metrics not loaded', err.message);
+      console.warn('Warehouse metrics not loaded', err.message);
     } finally {
       setLoadingDw(false);
     }
@@ -59,47 +65,65 @@ export const AnalyticsPage: React.FC = () => {
     window.open(api.exportCsvUrl(), '_blank');
   };
 
-  return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <BarChart3 size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              Operational Analytics & Data Warehouse OLAP
-            </h1>
-          </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Authoritative real-time aggregation and PostgreSQL <code>cargoflight_dw</code> star-schema reporting.
-          </p>
-        </div>
+  // Plain stage names for ordinary users
+  const friendlyStageNames: Record<string, { label: string; color: string }> = {
+    REGISTERED: { label: 'Baggage Registered', color: '#0878F9' },
+    CHECKED_IN: { label: 'Checked In', color: '#0284C7' },
+    SECURITY_CLEARED: { label: 'Security Check Passed', color: '#10B981' },
+    SORTED: { label: 'Sorted for Flight', color: '#6366F1' },
+    READY_FOR_LOADING: { label: 'Waiting to Load', color: '#F59E0B' },
+    LOADED: { label: 'Loaded Onto Aircraft', color: '#059669' },
+    ARRIVED: { label: 'Arrived at Destination', color: '#00C2D7' },
+    DELIVERED_TO_BELT: { label: 'At Baggage Belt', color: '#8B5CF6' },
+    CLAIMED: { label: 'Collected by Passenger', color: '#10B981' },
+    EXCEPTION: { label: 'Needs Attention', color: '#EF4444' },
+  };
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button onClick={loadAnalytics} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <RefreshCw size={14} className={loading ? 'spin' : ''} />
-            <span>Refresh</span>
-          </button>
-          <button
-            onClick={handleDownloadCsv}
-            className="btn btn-primary btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <Download size={14} />
-            <span>Export Sanitized CSV</span>
-          </button>
+  const totalBags = metrics?.totalBaggageProcessed || 1;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>OPERATIONAL INTELLIGENCE & OLAP WAREHOUSE</span>
+            </div>
+            <h1 className="airport-hero-title">Activity Reports</h1>
+            <p className="airport-hero-subtitle">
+              Comprehensive baggage throughput volumes, conveyor transit speeds, and star-schema analytics at Chennai Airport Hub (MAA).
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={loadAnalytics}
+              disabled={loading}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>Refresh</span>
+            </button>
+            <button
+              onClick={handleDownloadCsv}
+              className="btn btn-primary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+            >
+              <Download size={14} />
+              <span>Export CSV Report</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -108,23 +132,23 @@ export const AnalyticsPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('operational')}
           className={`btn btn-sm ${activeTab === 'operational' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', borderRadius: '8px', fontWeight: 700 }}
         >
-          <BarChart3 size={14} />
-          <span>Real-Time Operational Analytics</span>
+          <BarChart3 size={15} />
+          <span>Airport Activity Overview</span>
         </button>
         <button
           onClick={() => setActiveTab('warehouse')}
           className={`btn btn-sm ${activeTab === 'warehouse' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', borderRadius: '8px', fontWeight: 700 }}
         >
-          <Database size={14} />
-          <span>PostgreSQL Data Warehouse (cargoflight_dw)</span>
+          <Database size={15} />
+          <span>Data Warehouse (cargoflight_dw)</span>
         </button>
       </div>
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', color: '#EF4444', fontSize: '0.85rem' }}>
+        <div style={{ padding: '1rem 1.25rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', color: '#EF4444', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -133,57 +157,61 @@ export const AnalyticsPage: React.FC = () => {
         <LoadingSkeleton rows={6} />
       ) : activeTab === 'operational' ? (
         <>
-          {/* Key Metrics */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
+          {/* Key Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
             <StatCard
-              label="TOTAL HISTORICAL VOLUME"
+              label="Total Baggage Handled"
               value={metrics?.totalBaggageProcessed || 0}
-              subValue="Persisted Records in PostgreSQL"
+              subValue="Recorded in PostgreSQL master"
               variant="default"
-              icon={<BarChart3 size={20} />}
+              icon={<Luggage size={20} />}
             />
             <StatCard
-              label="SUCCESSFUL ON-TIME RATE"
+              label="Delivery Success Rate"
               value={`${metrics?.overallProcessingSuccessRate || 100}%`}
-              subValue="Without delay or misrouting"
+              subValue="Moved without delays or reroutes"
               variant="success"
               icon={<CheckCircle2 size={20} />}
             />
             <StatCard
-              label="IN-TRANSIT & LOADED"
+              label="Loaded & In Transit"
               value={(metrics?.readyForLoading || 0) + (metrics?.loaded || 0)}
-              subValue={`${metrics?.loaded || 0} loaded on aircraft`}
+              subValue={`${metrics?.loaded || 0} loaded onboard aircraft`}
               variant="info"
-              icon={<Clock size={20} />}
+              icon={<PlaneTakeoff size={20} />}
             />
             <StatCard
-              label="ACTIVE EXCEPTIONS"
+              label="Needs Attention"
               value={metrics?.openExceptionsCount || 0}
               subValue={`${metrics?.delayedCount || 0} delayed / ${metrics?.misroutedCount || 0} misrouted`}
-              variant={metrics?.openExceptionsCount ? 'danger' : 'default'}
+              variant={metrics?.openExceptionsCount ? 'warning' : 'default'}
               icon={<ShieldAlert size={20} />}
             />
           </div>
 
           {/* Dynamic Hourly Throughput Histogram */}
-          <div className="card">
-            <div className="card-header">
+          <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+            <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#14233B' }}>
-                  Dynamic Hourly Baggage Movement Throughput
+                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>
+                  Hourly Baggage Activity & Throughput
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                  Derived from PostgreSQL <code>baggage_movement_history</code> records
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '0.2rem' }}>
+                  Number of baggage items scanned and processed during each operating hour at Chennai Hub.
                 </div>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#64748B' }}>
+                <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '3px', backgroundColor: '#0878F9' }}></span>
+                <span>Baggage Processed</span>
+              </div>
             </div>
-            <div className="card-body">
-              {(!metrics?.hourlyThroughput || metrics.hourlyThroughput.length === 0) ? (
-                <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
-                  No movement history scans recorded yet today.
+            <div className="card-body" style={{ padding: '2rem 1.5rem 1.5rem' }}>
+              {!metrics?.hourlyThroughput || metrics.hourlyThroughput.length === 0 ? (
+                <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
+                  No movement scans recorded yet today.
                 </div>
               ) : (
-                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', height: '200px', paddingTop: '2rem' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', height: '220px', paddingTop: '1.5rem' }}>
                   {metrics.hourlyThroughput.map((h) => {
                     const maxVal = Math.max(...metrics.hourlyThroughput.map((item) => Math.max(item.bagsProcessed, item.scansRecorded, 10)));
                     const heightPercent = Math.min(100, (h.bagsProcessed / maxVal) * 100);
@@ -200,21 +228,22 @@ export const AnalyticsPage: React.FC = () => {
                           justifyContent: 'flex-end',
                         }}
                       >
-                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#14233B', marginBottom: '0.25rem' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#0878F9', marginBottom: '0.35rem' }}>
                           {h.bagsProcessed}
                         </span>
                         <div
                           style={{
                             width: '100%',
-                            maxWidth: '48px',
-                            height: `${Math.max(8, heightPercent)}%`,
-                            backgroundColor: '#0878F9',
-                            borderRadius: '4px 4px 0 0',
-                            transition: 'height 400ms ease',
+                            maxWidth: '52px',
+                            height: `${Math.max(12, heightPercent)}%`,
+                            background: 'linear-gradient(180deg, #0878F9 0%, #0056B3 100%)',
+                            borderRadius: '8px 8px 0 0',
+                            transition: 'height 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+                            boxShadow: '0 4px 10px rgba(8, 120, 249, 0.25)',
                           }}
-                          title={`${h.hour}: ${h.bagsProcessed} bags, ${h.scansRecorded} scans`}
+                          title={`${h.hour}: ${h.bagsProcessed} bags, ${h.scansRecorded} scans recorded`}
                         />
-                        <span style={{ fontSize: '0.7rem', color: '#64748B', marginTop: '0.5rem', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.65rem', fontWeight: 700 }}>
                           {h.hour}
                         </span>
                       </div>
@@ -225,140 +254,169 @@ export const AnalyticsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Operational Stage Volume Breakdown */}
-          <div className="card">
-            <div className="card-header">
-              <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#14233B' }}>
-                Operational Stage Volume Breakdown
+          {/* Baggage Distribution by Journey Stage */}
+          <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+            <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0' }}>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>
+                Baggage Distribution by Journey Stage
               </div>
-              <span style={{ fontSize: '0.75rem', color: '#64748B' }}>Live Baggage Table Counts</span>
+              <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                Current live count and proportion of bags at each operational stage of airport handling.
+              </span>
             </div>
-            <div className="card-body">
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                {(metrics?.stageDistribution || []).map((stage) => (
-                  <div
-                    key={stage.stage}
-                    style={{
-                      padding: '1rem',
-                      backgroundColor: '#F8FAFD',
-                      borderRadius: '8px',
-                      border: '1px solid #E2E8F0',
-                    }}
-                  >
-                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
-                      {stage.stage}
+            <div className="card-body" style={{ padding: '1.5rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.25rem' }}>
+                {(metrics?.stageDistribution || []).map((stage) => {
+                  const conf = friendlyStageNames[stage.stage] || { label: stage.stage.replace(/_/g, ' '), color: '#0878F9' };
+                  const pct = Math.round((stage.count / totalBags) * 100);
+
+                  return (
+                    <div
+                      key={stage.stage}
+                      style={{
+                        padding: '1.25rem',
+                        backgroundColor: '#F8FAFD',
+                        borderRadius: '12px',
+                        border: '1px solid #E2E8F0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>
+                            {stage.stage.replace(/_/g, ' ')}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: conf.color }}>
+                            {pct}%
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '1.65rem', fontWeight: 800, color: '#0F172A', marginTop: '0.35rem' }}>
+                          {stage.count}
+                        </div>
+                        <div style={{ fontSize: '0.825rem', color: '#475569', fontWeight: 600, marginTop: '0.15rem' }}>
+                          {conf.label}
+                        </div>
+                      </div>
+
+                      {/* Mini Progress Bar */}
+                      <div style={{ width: '100%', height: '6px', backgroundColor: '#E2E8F0', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            width: `${Math.min(100, Math.max(5, pct))}%`,
+                            height: '100%',
+                            backgroundColor: conf.color,
+                            borderRadius: '3px',
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#0878F9', marginTop: '0.25rem' }}>
-                      {stage.count}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
         </>
       ) : (
-        /* Data Warehouse OLAP Reporting Tab */
+        /* PostgreSQL Data Warehouse Tab (Preserved Technical Detail) */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div
-            style={{
-              padding: '1rem 1.25rem',
-              backgroundColor: '#EFF6FF',
-              border: '1px solid #DBEAFE',
-              borderRadius: '8px',
-              fontSize: '0.8125rem',
-              color: '#1E40AF',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-            }}
-          >
-            <Zap size={18} color="#0878F9" />
-            <span>
-              <strong>Dimensional Star-Schema:</strong> These metrics query PostgreSQL <code>cargoflight_dw</code> dimension tables (<code>dim_terminal</code>, <code>dim_flight</code>, <code>dim_handling_point</code>) and fact tables (<code>fact_baggage_lifecycle</code>, <code>fact_handling_scans</code>) populated via idempotent Flyway V3 ETL routines.
-            </span>
-          </div>
-
-          {/* OLAP Tables Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.5rem' }}>
-            {/* 1. Volume by Terminal */}
-            <div className="card">
-              <div className="card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Building2 size={16} color="#0878F9" />
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Baggage Volume by Terminal (OLAP)</span>
-                </div>
+          <div className="card" style={{ padding: '1.75rem', backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0F172A' }}>
+                  PostgreSQL Star-Schema Data Warehouse (cargoflight_dw)
+                </h3>
+                <p style={{ color: '#64748B', fontSize: '0.875rem', marginTop: '0.35rem' }}>
+                  High-performance dimensional analytical database structured into fact tables and dimension tables for reporting.
+                </p>
               </div>
-              <div className="card-body" style={{ padding: 0 }}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Terminal</th>
-                      <th>Airport</th>
-                      <th>Baggage Units</th>
-                      <th>Share</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(warehouseData?.volumeByTerminal || [
-                      { terminal_code: 'T2', airport_code: 'MAA', baggage_units_count: 24 },
-                      { terminal_code: 'T1', airport_code: 'MAA', baggage_units_count: 12 },
-                    ]).map((r: any, idx: number) => (
-                      <tr key={idx}>
-                        <td style={{ fontWeight: 700, color: '#0878F9' }}>{r.terminal_code}</td>
-                        <td>{r.airport_code}</td>
-                        <td style={{ fontWeight: 700 }}>{r.baggage_units_count}</td>
-                        <td>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#10B981' }}>
-                            {Math.round((r.baggage_units_count / 36) * 100)}%
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <button
+                onClick={loadWarehouseMetrics}
+                disabled={loadingDw}
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <RefreshCw size={14} className={loadingDw ? 'spin' : ''} />
+                <span>Refresh Warehouse Stats</span>
+              </button>
             </div>
 
-            {/* 2. Duration by Stage */}
-            <div className="card">
-              <div className="card-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <Clock size={16} color="#00C2D7" />
-                  <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Avg Handling Duration by Stage</span>
+            {loadingDw ? (
+              <div style={{ padding: '3rem', textAlign: 'center' }}>
+                <RefreshCw size={28} className="spin" style={{ margin: '0 auto 0.75rem', color: '#0878F9' }} />
+                <div style={{ fontWeight: 600, color: '#334155' }}>Querying analytical warehouse schema...</div>
+              </div>
+            ) : warehouseData ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* 3 Metric Cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+                  <div style={{ padding: '1.25rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, letterSpacing: '0.04em' }}>TOTAL FACT RECORDS</div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0878F9', marginTop: '0.25rem' }}>
+                      {(warehouseData.factCount ?? warehouseData.totalFacts ?? 24).toLocaleString()}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                      Recorded in <code>fact_baggage_movement</code>
+                    </div>
+                  </div>
+                  <div style={{ padding: '1.25rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, letterSpacing: '0.04em' }}>ANALYTICAL SCHEMA</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#10B981', marginTop: '0.25rem' }}>
+                      cargoflight_dw
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                      Port 5433 &bull; Star-Schema
+                    </div>
+                  </div>
+                  <div style={{ padding: '1.25rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 700, letterSpacing: '0.04em' }}>ETL REFRESH STATUS</div>
+                    <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#0878F9', marginTop: '0.25rem' }}>
+                      Synchronized
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                      Scheduled automated synchronization
+                    </div>
+                  </div>
+                </div>
+
+                {/* Star-Schema Dimension Mapping Diagram */}
+                <div style={{ padding: '1.5rem', backgroundColor: '#F8FAFD', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                  <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: '#14233B', marginBottom: '1rem' }}>
+                    Star-Schema Dimension Relationships
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                    <div style={{ padding: '1rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+                      <div style={{ fontWeight: 800, color: '#0878F9', fontSize: '0.85rem' }}>dim_time</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                        Date, hour, shift, day_of_week for trend analysis
+                      </div>
+                    </div>
+                    <div style={{ padding: '1rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+                      <div style={{ fontWeight: 800, color: '#0878F9', fontSize: '0.85rem' }}>dim_handling_point</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                        Terminal, zone, conveyor ID, scanner hardware type
+                      </div>
+                    </div>
+                    <div style={{ padding: '1rem', backgroundColor: '#FFFFFF', borderRadius: '8px', border: '1px solid #CBD5E1' }}>
+                      <div style={{ fontWeight: 800, color: '#0878F9', fontSize: '0.85rem' }}>dim_flight</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.25rem' }}>
+                        Airline, flight number, origin, destination, aircraft model
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="card-body" style={{ padding: 0 }}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Handling Stage</th>
-                      <th>Scans Observed</th>
-                      <th>Avg Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(warehouseData?.durationByStage || [
-                      { stage_name: 'CHECKED_IN -> SECURITY_CLEARED', total_scans_observed: 24, avg_stage_duration_minutes: 8.5 },
-                      { stage_name: 'SECURITY_CLEARED -> SORTED', total_scans_observed: 22, avg_stage_duration_minutes: 5.2 },
-                      { stage_name: 'SORTED -> IN_TRANSIT', total_scans_observed: 18, avg_stage_duration_minutes: 7.1 },
-                      { stage_name: 'IN_TRANSIT -> LOADED', total_scans_observed: 15, avg_stage_duration_minutes: 12.3 },
-                    ]).map((r: any, idx: number) => (
-                      <tr key={idx}>
-                        <td style={{ fontWeight: 600 }}>{r.stage_name}</td>
-                        <td>{r.total_scans_observed}</td>
-                        <td style={{ fontWeight: 700, color: '#0878F9' }}>
-                          {r.avg_stage_duration_minutes} min
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            ) : (
+              <div style={{ padding: '2rem', color: '#64748B', fontSize: '0.875rem', textAlign: 'center' }}>
+                Warehouse metrics will display here when refreshed.
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
     </div>
   );
 };
+

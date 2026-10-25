@@ -64,7 +64,7 @@ export const LoginPage: React.FC = () => {
           border: '1px solid rgba(255, 255, 255, 0.2)',
         }}
       >
-        {/* Header with CARGOFLIGHT Branding */}
+        {/* Header with FlyTrack Branding */}
         <div style={{ padding: '2.25rem 2rem 1.75rem', textAlign: 'center', backgroundColor: '#03111F', color: '#FFFFFF', borderBottom: '1px solid #1E293B' }}>
           <div
             style={{
@@ -84,14 +84,14 @@ export const LoginPage: React.FC = () => {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
             <h1 style={{ fontSize: '1.65rem', fontWeight: 900, color: '#FFFFFF', letterSpacing: '0.04em' }}>
-              CARGOFLIGHT
+              FLYTRACK
             </h1>
           </div>
-          <p style={{ fontSize: '0.75rem', fontWeight: 700, color: '#00C2D7', letterSpacing: '0.08em', marginTop: '0.25rem', textTransform: 'uppercase' }}>
-            AIRPORT CARGO & BAGGAGE TRACKING SYSTEM
+          <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#00C2D7', letterSpacing: '0.02em', marginTop: '0.35rem' }}>
+            &ldquo;Your baggage journey, made simple.&rdquo;
           </p>
           <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.35rem' }}>
-            Authoritative Operations &bull; PostgreSQL &bull; MongoDB &bull; Neo4j
+            Smart Airport Baggage Tracking & Flight Management System
           </div>
         </div>
 
@@ -119,7 +119,7 @@ export const LoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="username">
-                Operator Username
+                Username
               </label>
               <div style={{ position: 'relative' }}>
                 <span style={{ position: 'absolute', left: '0.85rem', top: '0.7rem', color: '#94A3B8' }}>
@@ -173,7 +173,7 @@ export const LoginPage: React.FC = () => {
                 boxShadow: '0 4px 12px rgba(8, 120, 249, 0.3)',
               }}
             >
-              {loading ? 'Authenticating...' : 'Sign In to Operations Console'}
+              {loading ? 'Signing in...' : 'Sign In to FlyTrack'}
             </button>
           </form>
 

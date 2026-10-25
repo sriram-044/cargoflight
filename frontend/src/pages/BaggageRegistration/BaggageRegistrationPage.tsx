@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
 import { Flight, Baggage, HandlingPoint } from '../../types';
 import { StatusBadge } from '../../components/ui/StatusBadge';
-import { Luggage, CheckCircle2, AlertCircle, ArrowRight, Plane, Scale } from 'lucide-react';
+import { Luggage, CheckCircle2, AlertCircle, ArrowRight, Plane, Scale, PlusCircle, Sparkles, Send } from 'lucide-react';
+import { getFriendlyLocationName } from '../../services/locationMapping';
 
 export const BaggageRegistrationPage: React.FC = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
@@ -41,7 +42,7 @@ export const BaggageRegistrationPage: React.FC = () => {
         }
         setHandlingPoints(pointList);
       } catch (err: any) {
-        setError('Failed to load flight schedules and handling checkpoints: ' + err.message);
+        setError('Failed to load flights and baggage locations: ' + (err.message || 'Service unavailable'));
       } finally {
         setFetchingConfig(false);
       }
@@ -92,65 +93,99 @@ export const BaggageRegistrationPage: React.FC = () => {
       });
 
       setRegisteredBag(result);
-      // Reset tag for next registration
       setBaggageTag('');
       setPassengerName('');
       setPassengerPnr('');
     } catch (err: any) {
-      setError(err.message || 'Failed to register baggage in PostgreSQL');
+      setError(err.message || 'Could not register baggage. Please verify details and try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div>
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#0f172a' }}>
-          Baggage Registration &bull; Terminal 2 Check-in
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.2rem' }}>
-          Assign IATA baggage tags to flights, record passenger manifest, and induct into MAA BHS
-        </p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>CHECK-IN COUNTER INTAKE & INDUCTION</span>
+            </div>
+            <h1 className="airport-hero-title">Register New Baggage</h1>
+            <p className="airport-hero-subtitle">
+              Register passenger luggage at check-in counters, assign to flight manifests, and induct into the baggage handling system.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <Link
+              to="/baggage"
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <span>Manage Baggage List</span>
+            </Link>
+            <Link
+              to="/tracking"
+              className="btn btn-primary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+            >
+              <Luggage size={14} />
+              <span>Track Baggage</span>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Success Notification Alert */}
       {registeredBag && (
         <div
           style={{
-            padding: '1.25rem',
-            backgroundColor: '#ecfdf5',
-            border: '1px solid #a7f3d0',
-            borderRadius: '10px',
+            padding: '1.5rem',
+            backgroundColor: '#ECFDF5',
+            border: '1px solid #A7F3D0',
+            borderRadius: '14px',
             display: 'flex',
             alignItems: 'flex-start',
             gap: '1rem',
+            boxShadow: 'var(--shadow-card)',
           }}
         >
-          <CheckCircle2 size={24} color="#059669" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <CheckCircle2 size={26} color="#059669" style={{ flexShrink: 0, marginTop: '2px' }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, color: '#065f46', fontSize: '1rem' }}>
-              Baggage Registered Successfully in PostgreSQL!
+            <div style={{ fontWeight: 800, color: '#065F46', fontSize: '1.15rem' }}>
+              Baggage Registered Successfully!
             </div>
-            <p style={{ fontSize: '0.8125rem', color: '#047857', marginTop: '0.25rem' }}>
-              Tag <strong>{registeredBag.baggageTag}</strong> has been created with status{' '}
+            <p style={{ fontSize: '0.9rem', color: '#047857', marginTop: '0.35rem', lineHeight: 1.5 }}>
+              Tag <strong>{registeredBag.baggageTag}</strong> is now registered with status{' '}
               <StatusBadge status={registeredBag.currentStatus} size="sm" /> for flight{' '}
               <strong>{registeredBag.flightNumber}</strong> ({registeredBag.originIata} &rarr;{' '}
               {registeredBag.destinationIata}).
             </p>
-            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.75rem' }}>
+            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
               <Link
                 to={`/tracking?tag=${registeredBag.baggageTag}`}
                 className="btn btn-primary btn-sm"
+                style={{ fontSize: '0.825rem', fontWeight: 700 }}
               >
-                Track Movement Timeline &rarr;
+                Track Baggage Journey &rarr;
               </Link>
               <Link
                 to={`/scans?tag=${registeredBag.baggageTag}`}
                 className="btn btn-secondary btn-sm"
+                style={{ fontSize: '0.825rem', fontWeight: 700 }}
               >
-                Induct / Scan at Security &rarr;
+                Send to Security Check &rarr;
               </Link>
             </div>
           </div>
@@ -161,39 +196,44 @@ export const BaggageRegistrationPage: React.FC = () => {
       {error && (
         <div
           style={{
-            padding: '1rem',
-            backgroundColor: '#fef2f2',
-            border: '1px solid #fecaca',
-            borderRadius: '8px',
-            color: '#b91c1c',
+            padding: '1rem 1.25rem',
+            backgroundColor: '#FEF2F2',
+            border: '1px solid #FECACA',
+            borderRadius: '10px',
+            color: '#B91C1C',
             display: 'flex',
             alignItems: 'center',
             gap: '0.75rem',
             fontSize: '0.875rem',
           }}
         >
-          <AlertCircle size={18} style={{ flexShrink: 0 }} />
+          <AlertCircle size={20} style={{ flexShrink: 0 }} />
           <span>{error}</span>
         </div>
       )}
 
       {/* Registration Form Card */}
-      <div className="card">
-        <div className="card-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Luggage size={18} color="#0284c7" />
-            <h3 style={{ fontSize: '1.05rem', fontWeight: 600 }}>New Baggage Intake Manifest</h3>
+      <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', overflow: 'hidden', boxShadow: 'var(--shadow-card)', maxWidth: '1080px', margin: '0 auto', width: '100%' }}>
+        <div className="card-header" style={{ padding: '1.25rem 1.75rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <Luggage size={22} color="#0878F9" />
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#14233B' }}>Baggage Intake & Induction Form</h3>
+              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Chennai International Airport (MAA) &bull; Terminal 2 Counters</div>
+            </div>
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Authoritative Operational Record</span>
+          <span style={{ fontSize: '0.75rem', color: '#0878F9', backgroundColor: '#EFF6FF', padding: '0.25rem 0.65rem', borderRadius: '6px', fontWeight: 700 }}>
+            PostgreSQL Master
+          </span>
         </div>
 
-        <div className="card-body">
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div className="card-body" style={{ padding: '2rem 1.75rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {/* Tag Generator Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', alignItems: 'flex-end' }}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="tag">
-                  Baggage Tag (IATA Barcode / RFID Tag) *
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="tag" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Baggage Tag Number (Barcode / Tracking ID) *
                 </label>
                 <input
                   id="tag"
@@ -201,7 +241,8 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={baggageTag}
                   onChange={(e) => setBaggageTag(e.target.value)}
-                  placeholder="e.g. MAA6E991204"
+                  placeholder="e.g. MAA6E991204 or click Auto-Generate"
+                  style={{ height: '44px', borderRadius: '8px', fontWeight: 700 }}
                   required
                 />
               </div>
@@ -210,22 +251,24 @@ export const BaggageRegistrationPage: React.FC = () => {
                 type="button"
                 onClick={generateRandomTag}
                 className="btn btn-secondary"
-                style={{ height: '38px', fontSize: '0.8125rem' }}
+                style={{ height: '44px', fontSize: '0.825rem', borderRadius: '8px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
               >
-                Auto-Generate Tag
+                <Sparkles size={15} color="#0878F9" />
+                <span>Auto-Generate Tag</span>
               </button>
             </div>
 
             {/* Flight Selection Row */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="flight">
-                Assigned Flight (Chennai MAA Operations) *
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" htmlFor="flight" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                Assigned Flight *
               </label>
               <select
                 id="flight"
                 className="form-select"
                 value={flightId}
                 onChange={(e) => handleFlightChange(Number(e.target.value))}
+                style={{ height: '44px', borderRadius: '8px', fontWeight: 600 }}
                 required
               >
                 {flights.map((f) => (
@@ -236,10 +279,10 @@ export const BaggageRegistrationPage: React.FC = () => {
               </select>
             </div>
 
-            {/* Passenger Manifest Row */}
+            {/* Passenger Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="pname">
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="pname" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
                   Passenger Full Name *
                 </label>
                 <input
@@ -248,13 +291,14 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={passengerName}
                   onChange={(e) => setPassengerName(e.target.value)}
-                  placeholder="e.g. Aravindhan Sundaram"
+                  placeholder="e.g. Priya Sundaram"
+                  style={{ height: '44px', borderRadius: '8px' }}
                   required
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="pnr">
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="pnr" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
                   Booking Reference / PNR *
                 </label>
                 <input
@@ -263,18 +307,19 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={passengerPnr}
                   onChange={(e) => setPassengerPnr(e.target.value)}
-                  placeholder="e.g. PNR882K"
+                  placeholder="e.g. PNR774A"
                   maxLength={8}
+                  style={{ height: '44px', borderRadius: '8px', fontWeight: 700 }}
                   required
                 />
               </div>
             </div>
 
-            {/* Origin & Destination Row */}
+            {/* Origin, Destination & Weight */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label" htmlFor="orig">
-                  Origin Airport Code
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="orig" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Origin Airport
                 </label>
                 <input
                   id="orig"
@@ -282,13 +327,13 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={originIata}
                   readOnly
-                  style={{ backgroundColor: '#f8fafc', color: '#64748b' }}
+                  style={{ backgroundColor: '#F8FAFC', color: '#0F172A', height: '44px', borderRadius: '8px', fontWeight: 700 }}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="dest">
-                  Destination Airport Code
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="dest" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Destination Airport
                 </label>
                 <input
                   id="dest"
@@ -296,12 +341,12 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={destinationIata}
                   readOnly
-                  style={{ backgroundColor: '#f8fafc', color: '#64748b' }}
+                  style={{ backgroundColor: '#F8FAFC', color: '#0F172A', height: '44px', borderRadius: '8px', fontWeight: 700 }}
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label" htmlFor="weight">
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" htmlFor="weight" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
                   Weight (kg) *
                 </label>
                 <input
@@ -313,39 +358,42 @@ export const BaggageRegistrationPage: React.FC = () => {
                   className="form-input"
                   value={weightKg}
                   onChange={(e) => setWeightKg(e.target.value)}
+                  style={{ height: '44px', borderRadius: '8px', fontWeight: 700 }}
                   required
                 />
               </div>
             </div>
 
-            {/* Handling Point Induction */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="point">
-                Initial Induction Handling Point *
+            {/* Starting Location */}
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label" htmlFor="point" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                Induction Checkpoint Location *
               </label>
               <select
                 id="point"
                 className="form-select"
                 value={initialHandlingPointId}
                 onChange={(e) => setInitialHandlingPointId(e.target.value)}
+                style={{ height: '44px', borderRadius: '8px' }}
                 required
               >
                 {handlingPoints.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.id} &mdash; {p.name} ({p.zone})
+                    {getFriendlyLocationName(p.id, p.name)} [{p.id}]
                   </option>
                 ))}
               </select>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
               <button
                 type="submit"
                 disabled={loading || fetchingConfig}
                 className="btn btn-primary"
-                style={{ padding: '0.65rem 1.5rem' }}
+                style={{ padding: '0.85rem 2.25rem', fontWeight: 700, borderRadius: '10px', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
               >
-                {loading ? 'Submitting to PostgreSQL...' : 'Register Baggage in System'}
+                <Send size={16} />
+                <span>{loading ? 'Registering...' : 'Register Baggage'}</span>
               </button>
             </div>
           </form>
@@ -354,3 +402,4 @@ export const BaggageRegistrationPage: React.FC = () => {
     </div>
   );
 };
+

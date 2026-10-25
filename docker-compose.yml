@@ -11,7 +11,7 @@ services:
     container_name: cargoflight-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: aerotrace_india
+      POSTGRES_DB: cargoflight
       POSTGRES_USER: aerotrace_app
       POSTGRES_PASSWORD: aerotrace_secure_password_2026
     ports:
@@ -19,7 +19,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aerotrace_app -d aerotrace_india"]
+      test: ["CMD-SHELL", "pg_isready -U aerotrace_app -d cargoflight"]
       interval: 5s
       timeout: 5s
       retries: 5

@@ -11,6 +11,8 @@ import {
   HandlingPoint,
   RouteCalculationRequest,
   RouteResponse,
+  RouteEdge,
+  AlternativeRoute,
   ScannerEventRequest,
   ScanResultResponse,
   AnalyticsSummary,
@@ -21,16 +23,86 @@ import {
 
 const API_BASE = '/api/v1';
 
-function getAuthHeader(): Record<string, string> {
-  const token = localStorage.getItem('aerotrace_token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+export function isTokenExpired(token: string | null): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return true;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.exp) return false;
+    return payload.exp * 1000 <= Date.now() + 15000;
+  } catch {
+    return true;
+  }
 }
 
-async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const headers = {
+let activeRefreshPromise: Promise<string | null> | null = null;
+
+export async function renewSession(): Promise<string | null> {
+  if (activeRefreshPromise) return activeRefreshPromise;
+
+  activeRefreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE}/auth/demo-session`);
+      if (response.ok) {
+        const json = await response.json();
+        if (json.success && json.data?.token) {
+          const newToken = json.data.token;
+          const userObj = {
+            username: json.data.username,
+            fullName: json.data.fullName,
+            role: json.data.role,
+            airport: json.data.airport,
+          };
+          localStorage.setItem('aerotrace_token', newToken);
+          localStorage.setItem('aerotrace_user', JSON.stringify(userObj));
+          window.dispatchEvent(
+            new CustomEvent('aerotrace_auth_updated', {
+              detail: { token: newToken, user: userObj },
+            })
+          );
+          return newToken;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to renew demo session:', err);
+    } finally {
+      activeRefreshPromise = null;
+    }
+    return null;
+  })();
+
+  return activeRefreshPromise;
+}
+
+export async function getValidToken(): Promise<string | null> {
+  const currentToken = localStorage.getItem('aerotrace_token');
+  if (currentToken && !isTokenExpired(currentToken)) {
+    return currentToken;
+  }
+  return await renewSession();
+}
+
+async function request<T>(endpoint: string, options: RequestInit = {}, retryCount = 0): Promise<T> {
+  const isAuthRoute = endpoint.startsWith('/auth');
+  let token = localStorage.getItem('aerotrace_token');
+
+  if (!isAuthRoute && (!token || isTokenExpired(token))) {
+    token = await getValidToken();
+  }
+
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...getAuthHeader(),
-    ...options.headers,
+    ...(token && !isTokenExpired(token) ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string>),
   };
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -38,10 +110,25 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers,
   });
 
-  const json: ApiResponse<T> = await response.json();
+  // Handle unauthorized or expired token by refreshing session and retrying once
+  if ((response.status === 401 || response.status === 403) && retryCount === 0 && !isAuthRoute) {
+    localStorage.removeItem('aerotrace_token');
+    const freshToken = await renewSession();
+    if (freshToken) {
+      return request<T>(endpoint, options, retryCount + 1);
+    }
+  }
+
+  const text = await response.text();
+  let json: ApiResponse<T>;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Server returned status ${response.status}: ${text.slice(0, 100) || 'Unknown response'}`);
+  }
 
   if (!response.ok || !json.success) {
-    throw new Error(json.message || 'Operational request failed');
+    throw new Error(json.message || `Operational request failed (${response.status})`);
   }
 
   return json.data;
@@ -114,6 +201,28 @@ export const api = {
   // Routes
   calculateRoute: async (data: RouteCalculationRequest): Promise<RouteResponse> => {
     return request<RouteResponse>('/routes/calculate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  recalculateRoute: async (data: RouteCalculationRequest): Promise<RouteResponse> => {
+    return request<RouteResponse>('/routes/recalculate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  getRouteLocations: async (): Promise<HandlingPoint[]> => {
+    return request<HandlingPoint[]>('/routes/locations');
+  },
+
+  getRouteSegment: async (fromId: string, toId: string): Promise<RouteEdge> => {
+    return request<RouteEdge>(`/routes/connections/${encodeURIComponent(fromId)}/${encodeURIComponent(toId)}`);
+  },
+
+  getAlternatives: async (data: RouteCalculationRequest): Promise<AlternativeRoute[]> => {
+    return request<AlternativeRoute[]>('/routes/alternatives', {
       method: 'POST',
       body: JSON.stringify(data),
     });

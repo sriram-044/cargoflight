@@ -25,14 +25,17 @@ public class MongoIndexInitializer {
 
     private final MongoTemplate mongoTemplate;
 
+    @org.springframework.beans.factory.annotation.Value("${aerotrace.mongodb.enabled:false}")
+    private boolean mongoEnabled;
+
     public MongoIndexInitializer(@Autowired(required = false) MongoTemplate mongoTemplate) {
         this.mongoTemplate = mongoTemplate;
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void initializeCollectionsAndIndexes() {
-        if (mongoTemplate == null) {
-            log.info("MongoTemplate not initialized; skipping MongoDB Atlas schema initialization.");
+        if (!mongoEnabled || mongoTemplate == null) {
+            log.info("MongoDB disabled or uninitialized; skipping MongoDB telemetry schema initialization.");
             return;
         }
 

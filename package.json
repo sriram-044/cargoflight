@@ -1,0 +1,15 @@
+{
+  "name": "cargoflight-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "FLYTRACK — Smart Airport Baggage Tracking and Flight Management System",
+  "scripts": {
+    "start": "npm --prefix frontend run dev",
+    "dev": "npm --prefix frontend run dev",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "cd backend && mvn spring-boot:run",
+    "build": "npm --prefix frontend run build",
+    "preview": "npm --prefix frontend run preview",
+    "launch": "cmd /c start.bat"
+  }
+}

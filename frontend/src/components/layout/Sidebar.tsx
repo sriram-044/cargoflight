@@ -1,5 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useExperienceMode } from '../../context/ExperienceModeContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard,
   PlaneTakeoff,
@@ -17,6 +19,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Plane,
+  Sparkles,
+  Sliders,
+  HelpCircle,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -25,31 +30,35 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
-  // Required 11 Modules + Retained Workflow Helpers
-  const mainNavItems = [
-    { label: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { label: 'Flight Operations', path: '/flights', icon: PlaneTakeoff },
-    { label: 'Baggage Handling', path: '/handling', icon: Layers },
+  const { mode, isSimple, toggleMode } = useExperienceMode();
+  const { user } = useAuth();
+
+  // Core navigation for everyday users & passengers
+  const everydayNavItems = [
+    { label: 'Home', path: '/', icon: LayoutDashboard },
     { label: 'Track Baggage', path: '/tracking', icon: Search },
-    { label: 'Route Optimization', path: '/routes', icon: Network },
-    { label: 'Terminal Management', path: '/terminals', icon: Building2 },
-    { label: 'Live Scan Events', path: '/scans', icon: Barcode },
-    { label: 'Analytics & Reports', path: '/analytics', icon: BarChart3 },
-    { label: 'Distributed Databases', path: '/database-center', icon: Database },
-    { label: 'Users & Roles', path: '/admin', icon: Users },
-    { label: 'Settings', path: '/settings', icon: Settings },
+    { label: 'Flights', path: '/flights', icon: PlaneTakeoff },
+    { label: 'Baggage Locations', path: '/terminals', icon: Building2 },
+    { label: 'Problems & Delays', path: '/exceptions', icon: AlertTriangle },
+    { label: 'Activity Reports', path: '/analytics', icon: BarChart3 },
   ];
 
-  const secondaryNavItems = [
-    { label: 'Baggage Registration', path: '/registration', icon: Luggage },
-    { label: 'Exceptions & Recovery', path: '/exceptions', icon: AlertTriangle },
+  // Airport Operations & Administrative tools
+  const operationsNavItems = [
+    { label: 'Update Baggage Status', path: '/handling', icon: Layers },
+    { label: 'Register New Baggage', path: '/registration', icon: Luggage },
+    { label: 'Find Best Route', path: '/routes', icon: Network },
+    { label: 'Scanning Activity', path: '/scans', icon: Barcode },
+    { label: 'System Status', path: '/database-center', icon: Database },
+    { label: 'User Permissions', path: '/admin', icon: Users },
+    { label: 'Settings', path: '/settings', icon: Settings },
   ];
 
   return (
     <aside
       style={{
         width: collapsed ? '72px' : '264px',
-        backgroundColor: '#06182D', // CARGOFLIGHT Navy
+        backgroundColor: '#06182D', // FlyTrack Navy
         color: '#E2E8F0',
         borderRight: '1px solid #1E293B',
         display: 'flex',
@@ -65,7 +74,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
       {/* Brand Header */}
       <div
         style={{
-          height: '64px',
+          height: '66px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'space-between',
@@ -78,31 +87,31 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <div
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '8px',
+                width: '34px',
+                height: '34px',
+                borderRadius: '9px',
                 backgroundColor: '#0878F9',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 color: '#FFFFFF',
-                boxShadow: '0 0 12px rgba(8, 120, 249, 0.4)',
+                boxShadow: '0 0 14px rgba(8, 120, 249, 0.45)',
               }}
             >
-              <Plane size={18} />
+              <Luggage size={19} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span
                   style={{
-                    fontSize: '1.05rem',
+                    fontSize: '1.15rem',
                     fontWeight: 800,
                     color: '#FFFFFF',
-                    letterSpacing: '0.04em',
+                    letterSpacing: '0.03em',
                     fontFamily: 'var(--font-display, sans-serif)',
                   }}
                 >
-                  CARGOFLIGHT
+                  FLYTRACK
                 </span>
                 <span
                   style={{
@@ -112,7 +121,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                     backgroundColor: 'rgba(0, 194, 215, 0.15)',
                     padding: '0.1rem 0.35rem',
                     borderRadius: '4px',
-                    letterSpacing: '0.05em',
+                    letterSpacing: '0.04em',
                   }}
                 >
                   AIRPORT
@@ -122,12 +131,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
                 style={{
                   fontSize: '0.625rem',
                   color: '#94A3B8',
-                  fontWeight: 600,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
+                  fontWeight: 500,
+                  letterSpacing: '0.01em',
                 }}
               >
-                CARGO & BAGGAGE TRACKING
+                Your baggage journey, made simple.
               </div>
             </div>
           </div>
@@ -136,7 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
             style={{
               width: '36px',
               height: '36px',
-              borderRadius: '8px',
+              borderRadius: '9px',
               backgroundColor: '#0878F9',
               display: 'flex',
               alignItems: 'center',
@@ -145,152 +153,196 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed, onToggle }) => {
               boxShadow: '0 0 12px rgba(8, 120, 249, 0.4)',
             }}
           >
-            <Plane size={20} />
+            <Luggage size={18} />
           </div>
         )}
 
         <button
           onClick={onToggle}
+          title={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
           style={{
             border: 'none',
             background: 'transparent',
             color: '#94A3B8',
             cursor: 'pointer',
             padding: '0.35rem',
-            borderRadius: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'color 150ms ease',
+            borderRadius: '6px',
           }}
-          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
 
-      {/* Navigation Links */}
-      <nav style={{ padding: '0.85rem 0.65rem', flex: 1, overflowY: 'auto' }}>
-        <div
-          style={{
-            fontSize: '0.65rem',
-            fontWeight: 700,
-            color: '#64748B',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            padding: '0 0.65rem 0.4rem',
-            display: collapsed ? 'none' : 'block',
-          }}
-        >
-          Operations Core
-        </div>
-        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-          {mainNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.path}>
+      {/* Navigation List */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '0.75rem 0.65rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1.25rem',
+        }}
+      >
+        {/* Everyday Section */}
+        <div>
+          {!collapsed && (
+            <div
+              style={{
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                color: '#64748B',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                padding: '0 0.65rem 0.5rem',
+              }}
+            >
+              Everyday Tracking
+            </div>
+          )}
+          <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+            {everydayNavItems.map((item) => {
+              const Icon = item.icon;
+              return (
                 <NavLink
+                  key={item.path}
                   to={item.path}
-                  end={item.path === '/'}
+                  title={collapsed ? item.label : undefined}
                   style={({ isActive }) => ({
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
-                    padding: collapsed ? '0.65rem 0' : '0.6rem 0.85rem',
+                    padding: collapsed ? '0.65rem 0' : '0.6rem 0.75rem',
                     justifyContent: collapsed ? 'center' : 'flex-start',
                     borderRadius: '8px',
                     color: isActive ? '#FFFFFF' : '#94A3B8',
                     backgroundColor: isActive ? '#0878F9' : 'transparent',
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: '0.85rem',
                     textDecoration: 'none',
-                    transition: 'all 150ms ease',
-                    boxShadow: isActive ? '0 2px 8px rgba(8, 120, 249, 0.35)' : 'none',
+                    fontWeight: isActive ? 600 : 500,
+                    fontSize: '0.8125rem',
+                    transition: 'all 120ms ease',
                   })}
-                  title={collapsed ? item.label : undefined}
                 >
-                  <Icon size={18} color={undefined} />
-                  {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
+                  <Icon size={18} style={{ flexShrink: 0 }} />
+                  {!collapsed && <span>{item.label}</span>}
                 </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-
-        {/* Retained Operational Consoles */}
-        <div
-          style={{
-            fontSize: '0.65rem',
-            fontWeight: 700,
-            color: '#64748B',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            padding: '1.25rem 0.65rem 0.4rem',
-            display: collapsed ? 'none' : 'block',
-          }}
-        >
-          Quick Consoles
+              );
+            })}
+          </nav>
         </div>
-        <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-          {secondaryNavItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  style={({ isActive }) => ({
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: collapsed ? '0.65rem 0' : '0.55rem 0.85rem',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    borderRadius: '8px',
-                    color: isActive ? '#FFFFFF' : '#94A3B8',
-                    backgroundColor: isActive ? '#0878F9' : 'transparent',
-                    fontWeight: isActive ? 600 : 500,
-                    fontSize: '0.825rem',
-                    textDecoration: 'none',
-                    transition: 'all 150ms ease',
-                  })}
-                  title={collapsed ? item.label : undefined}
-                >
-                  <Icon size={16} />
-                  {!collapsed && <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
 
-      {/* Footer Status */}
-      {!collapsed ? (
+        {/* Airport Operations Section (Available in Operations Mode or togglable) */}
+        {(!isSimple || !collapsed) && (
+          <div>
+            {!collapsed && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0 0.65rem 0.5rem',
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: '0.6875rem',
+                    fontWeight: 700,
+                    color: '#64748B',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Airport Operations
+                </span>
+                {isSimple && (
+                  <span
+                    style={{
+                      fontSize: '0.625rem',
+                      color: '#00C2D7',
+                      backgroundColor: 'rgba(0, 194, 215, 0.1)',
+                      padding: '0.1rem 0.35rem',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    Staff Tools
+                  </span>
+                )}
+              </div>
+            )}
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+              {operationsNavItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    title={collapsed ? item.label : undefined}
+                    style={({ isActive }) => ({
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.75rem',
+                      padding: collapsed ? '0.65rem 0' : '0.6rem 0.75rem',
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      borderRadius: '8px',
+                      color: isActive ? '#FFFFFF' : '#94A3B8',
+                      backgroundColor: isActive ? '#0878F9' : 'transparent',
+                      textDecoration: 'none',
+                      fontWeight: isActive ? 600 : 500,
+                      fontSize: '0.8125rem',
+                      transition: 'all 120ms ease',
+                    })}
+                  >
+                    <Icon size={18} style={{ flexShrink: 0 }} />
+                    {!collapsed && <span>{item.label}</span>}
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+        )}
+      </div>
+
+      {/* Mode Switcher Banner in Sidebar Footer */}
+      {!collapsed && (
         <div
           style={{
             padding: '0.85rem 1rem',
             backgroundColor: '#03111F',
             borderTop: '1px solid #1E293B',
-            fontSize: '0.7rem',
-            color: '#64748B',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.2rem',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontWeight: 600, color: '#94A3B8' }}>CARGOFLIGHT 3-DB</span>
-            <span style={{ color: '#10B981', display: 'flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981' }} />
-              ONLINE
-            </span>
+          <div
+            onClick={toggleMode}
+            style={{
+              padding: '0.65rem 0.75rem',
+              borderRadius: '8px',
+              backgroundColor: isSimple ? 'rgba(16, 185, 129, 0.12)' : 'rgba(8, 120, 249, 0.15)',
+              border: isSimple ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(8, 120, 249, 0.25)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 700,
+                  color: isSimple ? '#34D399' : '#60A5FA',
+                }}
+              >
+                {isSimple ? 'Simple Mode Active' : 'Operations Mode Active'}
+              </div>
+              <div style={{ fontSize: '0.6875rem', color: '#94A3B8' }}>
+                {isSimple ? 'Switch to Staff Ops' : 'Switch to Passenger View'}
+              </div>
+            </div>
+            {isSimple ? <Sparkles size={16} color="#34D399" /> : <Sliders size={16} color="#60A5FA" />}
           </div>
-          <div style={{ fontSize: '0.65rem', color: '#64748B' }}>
-            PG + MongoDB + Neo4j
-          </div>
-        </div>
-      ) : (
-        <div style={{ padding: '0.75rem', textAlign: 'center', borderTop: '1px solid #1E293B' }}>
-          <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', display: 'inline-block' }} />
         </div>
       )}
     </aside>

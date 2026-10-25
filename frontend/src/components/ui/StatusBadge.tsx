@@ -85,12 +85,43 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
 
   const isSmall = size === 'sm';
 
+  // Plain English labels for ordinary users
+  const friendlyLabels: Record<string, string> = {
+    REGISTERED: 'Baggage Registered',
+    CHECKED_IN: 'Checked In',
+    SECURITY_CLEARED: 'Security Cleared',
+    SORTED: 'Sorted for Flight',
+    READY_FOR_LOADING: 'Waiting to Load',
+    LOADED: 'Loaded Onto Aircraft',
+    ARRIVED: 'Arrived at Destination',
+    DELIVERED_TO_BELT: 'Ready at Baggage Belt',
+    CLAIMED: 'Collected',
+    EXCEPTION: 'Needs Attention',
+    DELAYED: 'Delayed',
+    MISROUTED: 'Needs Re-routing',
+    SECURITY_REJECT: 'Security Review Required',
+    BLOCKED: 'Temporarily Paused',
+    PASS: 'Healthy / Active',
+    ONLINE: 'Online',
+    ACTIVE: 'Active',
+    RESOLVED: 'Resolved',
+    SYNCHRONIZED: 'In Sync',
+    SCHEDULED: 'Scheduled',
+    IN_TRANSIT: 'In Transit',
+    OFFLINE: 'Offline',
+    CRITICAL: 'Critical Issue',
+    WARNING: 'Check Required',
+  };
+
+  const displayLabel = friendlyLabels[normStatus] || status.replace(/_/g, ' ');
+
   return (
     <span
+      title={`System Code: ${status}`}
       style={{
         display: 'inline-flex',
         alignItems: 'center',
-        padding: isSmall ? '0.15rem 0.45rem' : '0.25rem 0.65rem',
+        padding: isSmall ? '0.15rem 0.5rem' : '0.25rem 0.75rem',
         borderRadius: '9999px',
         fontSize: isSmall ? '0.7rem' : '0.75rem',
         fontWeight: 600,
@@ -107,10 +138,10 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
           height: isSmall ? '5px' : '6px',
           borderRadius: '50%',
           backgroundColor: text,
-          marginRight: '0.35rem',
+          marginRight: '0.4rem',
         }}
       />
-      {status.replace(/_/g, ' ')}
+      {displayLabel}
     </span>
   );
 };

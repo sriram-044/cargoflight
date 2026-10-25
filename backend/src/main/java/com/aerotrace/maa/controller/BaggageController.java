@@ -53,6 +53,17 @@ public class BaggageController {
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<Page<BaggageResponse>>> getAllBaggage(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "status", required = false) String status,
+            @RequestParam(value = "flightId", required = false) Long flightId,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @RequestParam(value = "sort", defaultValue = "registeredAt,desc") String sort) {
+        return searchBaggage(query, status, flightId, page, size, sort);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<Page<BaggageResponse>>> searchBaggage(
             @RequestParam(value = "query", required = false) String query,

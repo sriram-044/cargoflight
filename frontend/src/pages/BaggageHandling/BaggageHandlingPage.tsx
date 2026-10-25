@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import { Baggage, HandlingPoint } from '../../types';
+import { StatusBadge } from '../../components/ui/StatusBadge';
 import {
   Layers,
   Search,
@@ -14,21 +15,24 @@ import {
   Luggage,
   MapPin,
   RefreshCw,
+  X,
+  Plane,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getFriendlyLocationName } from '../../services/locationMapping';
 
 const STAGES = [
   { key: 'ALL', label: 'All Stages' },
   { key: 'REGISTERED', label: 'Registered' },
   { key: 'CHECKED_IN', label: 'Checked In' },
-  { key: 'SECURITY_CLEARED', label: 'Security Cleared' },
-  { key: 'SORTED', label: 'Sorted' },
+  { key: 'SECURITY_CLEARED', label: 'Security Check' },
+  { key: 'SORTED', label: 'Sorted for Flight' },
   { key: 'IN_TRANSIT', label: 'In Transit' },
-  { key: 'READY_FOR_LOADING', label: 'Ready for Loading' },
-  { key: 'LOADED', label: 'Loaded' },
-  { key: 'ARRIVED', label: 'Arrived' },
-  { key: 'DELIVERED_TO_BELT', label: 'Delivered to Belt' },
-  { key: 'CLAIMED', label: 'Claimed' },
+  { key: 'READY_FOR_LOADING', label: 'Waiting to Load' },
+  { key: 'LOADED', label: 'Loaded on Aircraft' },
+  { key: 'ARRIVED', label: 'Arrived at Destination' },
+  { key: 'DELIVERED_TO_BELT', label: 'At Baggage Belt' },
+  { key: 'CLAIMED', label: 'Collected' },
 ];
 
 const VALID_NEXT_STEPS: Record<string, string[]> = {
@@ -44,6 +48,19 @@ const VALID_NEXT_STEPS: Record<string, string[]> = {
   DELIVERED_TO_BELT: ['CLAIMED'],
   CLAIMED: [],
   EXCEPTION: ['CHECKED_IN', 'SECURITY_CLEARED', 'SORTED', 'READY_FOR_LOADING', 'LOADED'],
+};
+
+const STEP_LABELS: Record<string, string> = {
+  CHECKED_IN: 'Checked In',
+  SECURITY_CLEARED: 'Pass Security Check',
+  SECURITY_HELD: 'Hold for Inspection',
+  SORTED: 'Sort for Flight',
+  IN_TRANSIT: 'Move In Transit',
+  READY_FOR_LOADING: 'Ready for Aircraft Loading',
+  LOADED: 'Load Onto Aircraft',
+  ARRIVED: 'Mark Arrived',
+  DELIVERED_TO_BELT: 'Send to Collection Belt',
+  CLAIMED: 'Mark Collected',
 };
 
 export const BaggageHandlingPage: React.FC = () => {
@@ -118,15 +135,14 @@ export const BaggageHandlingPage: React.FC = () => {
         targetStatus,
         handlingPointId: targetPointId || undefined,
         notes: notes || undefined,
-        scannerId: 'MANUAL_HANDLING_CONSOLE',
+        scannerId: 'STAFF_CONSOLE',
       });
 
       setFeedback({
         type: 'success',
-        message: `Successfully transitioned ${updated.baggageTag} to ${updated.currentStatus}. Movement history recorded.`,
+        message: `Successfully updated ${updated.baggageTag}. Journey status updated.`,
       });
 
-      // Update in local list
       setBaggageList((prev) =>
         prev.map((b) => (b.baggageTag === updated.baggageTag ? updated : b))
       );
@@ -134,7 +150,7 @@ export const BaggageHandlingPage: React.FC = () => {
     } catch (err: any) {
       setFeedback({
         type: 'error',
-        message: err.message || 'Transition rejected by operational workflow rules.',
+        message: err.message || 'Update could not be completed. Check stage requirements.',
       });
     } finally {
       setTransitioning(false);
@@ -142,72 +158,69 @@ export const BaggageHandlingPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header Banner */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Layers size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              Baggage Handling Stage Console
-            </h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>BAGGAGE LIFECYCLE & SORTING OPERATIONS</span>
+            </div>
+            <h1 className="airport-hero-title">Update Baggage Status</h1>
+            <p className="airport-hero-subtitle">
+              Advance passenger baggage through lifecycle milestones: Check-In, EDS Security Clearance, Automated Sorter Chutes, Ramp Makeup, and Aircraft Hold Loading.
+            </p>
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Enforce linear baggage stage workflows with strict transactional state transitions and append-only movement logs.
-          </p>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button
-            onClick={fetchBaggage}
-            disabled={loading}
-            className="btn btn-secondary btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <RefreshCw size={14} className={loading ? 'spin' : ''} />
-            <span>Refresh Manifest</span>
-          </button>
-          <Link to="/registration" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <Luggage size={14} />
-            <span>Register New Bag</span>
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={fetchBaggage}
+              disabled={loading}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>Refresh List</span>
+            </button>
+            <Link to="/registration" className="btn btn-primary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <Luggage size={14} />
+              <span>Register New Baggage</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Filter Bar */}
-      <div className="card" style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: '260px' }}>
-            <Search size={16} style={{ position: 'absolute', left: '0.75rem', top: '0.65rem', color: '#94A3B8' }} />
+      {/* Filter and Search Bar */}
+      <div className="card" style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: '280px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '0.9rem', top: '0.75rem', color: '#94A3B8' }} />
             <input
               type="text"
               className="form-input"
-              style={{ paddingLeft: '2.25rem' }}
+              style={{ paddingLeft: '2.5rem', height: '42px', borderRadius: '8px', fontSize: '0.9rem' }}
               placeholder="Search by baggage tag, passenger name, PNR..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && fetchBaggage()}
             />
           </div>
-          <button onClick={fetchBaggage} className="btn btn-primary btn-sm">
+          <button onClick={fetchBaggage} className="btn btn-primary btn-sm" style={{ height: '42px', padding: '0 1.5rem', fontWeight: 700 }}>
             Search
           </button>
         </div>
 
-        {/* Stage Tabs */}
-        <div style={{ display: 'flex', gap: '0.4rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+        {/* Stage Filter Tabs */}
+        <div style={{ display: 'flex', gap: '0.45rem', overflowX: 'auto', paddingBottom: '0.35rem' }}>
           {STAGES.map((s) => {
             const isSelected = selectedStage === s.key;
             return (
@@ -215,16 +228,16 @@ export const BaggageHandlingPage: React.FC = () => {
                 key={s.key}
                 onClick={() => setSelectedStage(s.key)}
                 style={{
-                  padding: '0.4rem 0.85rem',
+                  padding: '0.45rem 1rem',
                   borderRadius: '20px',
-                  fontSize: '0.75rem',
-                  fontWeight: isSelected ? 700 : 500,
-                  border: isSelected ? '1px solid #0878F9' : '1px solid #E2E8F0',
+                  fontSize: '0.8rem',
+                  fontWeight: isSelected ? 800 : 600,
+                  border: isSelected ? '1.5px solid #0878F9' : '1px solid #E2E8F0',
                   backgroundColor: isSelected ? '#EFF6FF' : '#FFFFFF',
                   color: isSelected ? '#0878F9' : '#475569',
                   cursor: 'pointer',
                   whiteSpace: 'nowrap',
-                  transition: 'all 150ms ease',
+                  transition: 'all 140ms ease',
                 }}
               >
                 {s.label}
@@ -235,120 +248,102 @@ export const BaggageHandlingPage: React.FC = () => {
       </div>
 
       {/* Baggage Table */}
-      <div className="card">
-        <div className="card-header">
-          <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#14233B' }}>
-            Active Baggage Items ({baggageList.length})
+      <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+        <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#14233B' }}>
+            Baggage Items ({baggageList.length})
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            Showing operational baggage assigned to MAA Hub
+          <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+            Airport baggage assigned to Chennai Hub (MAA)
           </span>
         </div>
 
         {loading ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-            <RefreshCw size={24} className="spin" style={{ margin: '0 auto 0.75rem' }} />
-            <div>Loading baggage manifests...</div>
+          <div style={{ padding: '3.5rem', textAlign: 'center', color: '#64748B' }}>
+            <RefreshCw size={28} className="spin" style={{ margin: '0 auto 0.75rem', color: '#0878F9' }} />
+            <div style={{ fontWeight: 600 }}>Loading baggage manifests...</div>
           </div>
         ) : error ? (
-          <div style={{ padding: '2rem', textAlign: 'center', color: '#EF4444' }}>
-            <AlertTriangle size={24} style={{ margin: '0 auto 0.5rem' }} />
+          <div style={{ padding: '2.5rem', textAlign: 'center', color: '#EF4444' }}>
+            <AlertTriangle size={28} style={{ margin: '0 auto 0.5rem' }} />
             <div>{error}</div>
           </div>
         ) : baggageList.length === 0 ? (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
-            <Luggage size={32} style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-            <div style={{ fontWeight: 600 }}>No baggage records found in stage "{selectedStage}"</div>
-            <p style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>Register new baggage or select a different stage.</p>
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: '#64748B' }}>
+            <Luggage size={40} style={{ margin: '0 auto 0.75rem', opacity: 0.4 }} />
+            <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#0F172A' }}>No baggage records found in this stage.</div>
+            <p style={{ fontSize: '0.85rem', marginTop: '0.35rem', color: '#64748B' }}>Select "All Stages" or try searching for a different tag or passenger.</p>
           </div>
         ) : (
           <div className="table-responsive">
-            <table className="table">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>Baggage Tag</th>
-                  <th>Passenger & PNR</th>
-                  <th>Flight</th>
-                  <th>Current Stage</th>
-                  <th>Handling Point</th>
-                  <th>Next Target</th>
-                  <th>Actions</th>
+                <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Baggage Tag</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Passenger & PNR</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Flight & Route</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Current Status</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Current Location</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Next Location</th>
+                  <th style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {baggageList.map((bag) => {
                   const allowed = VALID_NEXT_STEPS[bag.currentStatus] || [];
                   return (
-                    <tr key={bag.id}>
-                      <td>
+                    <tr key={bag.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '1rem 1.25rem' }}>
                         <Link
                           to={`/tracking?tag=${bag.baggageTag}`}
-                          style={{ fontWeight: 700, color: '#0878F9', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                          style={{ fontWeight: 800, color: '#0878F9', display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none', fontSize: '0.95rem' }}
                         >
-                          <Luggage size={14} />
+                          <Luggage size={15} />
                           <span>{bag.baggageTag}</span>
                         </Link>
-                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>{bag.weightKg} kg</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748B', marginTop: '0.15rem' }}>{bag.weightKg} kg</div>
                       </td>
-                      <td>
-                        <div style={{ fontWeight: 600, color: '#14233B' }}>{bag.passengerName}</div>
-                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>PNR: {bag.passengerPnr}</div>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ fontWeight: 700, color: '#14233B', fontSize: '0.875rem' }}>{bag.passengerName}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748B' }}>PNR: <strong style={{ color: '#0F172A' }}>{bag.passengerPnr}</strong></div>
                       </td>
-                      <td>
-                        <span style={{ fontWeight: 600, color: '#1E293B' }}>{bag.flightNumber}</span>
-                        <div style={{ fontSize: '0.7rem', color: '#64748B' }}>
-                          {bag.originIata} &rarr; {bag.destinationIata}
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ fontWeight: 700, color: '#0F172A', fontSize: '0.875rem' }}>{bag.flightNumber}</div>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.2rem', backgroundColor: '#F1F5F9', padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, color: '#334155' }}>
+                          <span>{bag.originIata}</span>
+                          <span style={{ color: '#0878F9' }}>&rarr;</span>
+                          <span>{bag.destinationIata}</span>
                         </div>
                       </td>
-                      <td>
-                        <span
-                          style={{
-                            display: 'inline-block',
-                            padding: '0.2rem 0.6rem',
-                            borderRadius: '12px',
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
-                            backgroundColor:
-                              bag.currentStatus === 'LOADED' || bag.currentStatus === 'CLAIMED'
-                                ? '#ECFDF5'
-                                : bag.currentStatus === 'EXCEPTION'
-                                ? '#FEF2F2'
-                                : '#EFF6FF',
-                            color:
-                              bag.currentStatus === 'LOADED' || bag.currentStatus === 'CLAIMED'
-                                ? '#065F46'
-                                : bag.currentStatus === 'EXCEPTION'
-                                ? '#991B1B'
-                                : '#0878F9',
-                          }}
-                        >
-                          {bag.currentStatus}
-                        </span>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <StatusBadge status={bag.currentStatus} size="sm" />
                       </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem' }}>
-                          <MapPin size={13} color="#64748B" />
-                          <span>{bag.currentHandlingPointName || bag.currentHandlingPointId || 'N/A'}</span>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.85rem', color: '#334155', fontWeight: 600 }}>
+                          <MapPin size={14} color="#0878F9" />
+                          <span>{getFriendlyLocationName(bag.currentHandlingPointId, bag.currentHandlingPointName)}</span>
                         </div>
                       </td>
-                      <td>
-                        <div style={{ fontSize: '0.75rem', color: '#475569' }}>
-                          {bag.expectedNextHandlingPointName || 'Finalized'}
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                          {bag.expectedNextHandlingPointName || bag.expectedNextHandlingPointId
+                            ? getFriendlyLocationName(bag.expectedNextHandlingPointId, bag.expectedNextHandlingPointName)
+                            : 'Finalized'}
                         </div>
                       </td>
-                      <td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
                         {allowed.length > 0 ? (
                           <button
                             onClick={() => openTransitionModal(bag)}
                             className="btn btn-primary btn-sm"
-                            style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem' }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px' }}
                           >
-                            <span>Move Stage</span>
+                            <span>Advance Status</span>
                             <ArrowRight size={13} />
                           </button>
                         ) : (
-                          <span style={{ fontSize: '0.75rem', color: '#10B981', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <CheckCircle2 size={14} /> Claimed
+                          <span style={{ fontSize: '0.8rem', color: '#10B981', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                            <CheckCircle2 size={16} /> Completed
                           </span>
                         )}
                       </td>
@@ -370,45 +365,49 @@ export const BaggageHandlingPage: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(6, 24, 45, 0.6)',
+            backgroundColor: 'rgba(3, 17, 31, 0.75)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 100,
-            padding: '1rem',
+            zIndex: 1000,
+            padding: '1.5rem',
+            backdropFilter: 'blur(4px)',
           }}
         >
           <div
             className="card"
             style={{
               width: '100%',
-              maxWidth: '520px',
+              maxWidth: '560px',
               backgroundColor: '#FFFFFF',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              borderRadius: '14px',
+              overflow: 'hidden',
             }}
           >
-            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF' }}>
+            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF', padding: '1.25rem 1.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <div style={{ fontSize: '1rem', fontWeight: 800 }}>Move Baggage Stage</div>
-                <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>
-                  Tag: {activeBaggage.baggageTag} &bull; Flight: {activeBaggage.flightNumber}
+                <div style={{ fontSize: '1.15rem', fontWeight: 800 }}>Advance Baggage Status</div>
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.2rem' }}>
+                  Tag: <strong style={{ color: '#FFFFFF' }}>{activeBaggage.baggageTag}</strong> &bull; Flight: <strong style={{ color: '#00C2D7' }}>{activeBaggage.flightNumber}</strong>
                 </div>
               </div>
               <button
                 onClick={() => setActiveBaggage(null)}
-                style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', fontSize: '1.2rem' }}
+                style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.25rem' }}
               >
-                &times;
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleExecuteTransition} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <form onSubmit={handleExecuteTransition} style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.35rem' }}>
               {feedback && (
                 <div
                   style={{
-                    padding: '0.75rem 1rem',
+                    padding: '0.85rem 1.15rem',
                     borderRadius: '8px',
-                    fontSize: '0.8125rem',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
                     backgroundColor: feedback.type === 'success' ? '#ECFDF5' : '#FEF2F2',
                     border: `1px solid ${feedback.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
                     color: feedback.type === 'success' ? '#065F46' : '#991B1B',
@@ -418,44 +417,48 @@ export const BaggageHandlingPage: React.FC = () => {
                 </div>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '0.75rem', backgroundColor: '#F8FAFD', borderRadius: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '1rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>CURRENT STAGE</div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#0878F9' }}>
-                    {activeBaggage.currentStatus}
+                  <div style={{ fontSize: '0.725rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Current Stage</div>
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <StatusBadge status={activeBaggage.currentStatus} size="sm" />
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.7rem', color: '#64748B', fontWeight: 600 }}>PASSENGER</div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#14233B' }}>
+                  <div style={{ fontSize: '0.725rem', color: '#64748B', fontWeight: 700, textTransform: 'uppercase' }}>Passenger</div>
+                  <div style={{ fontSize: '0.9rem', fontWeight: 800, color: '#14233B', marginTop: '0.35rem' }}>
                     {activeBaggage.passengerName}
                   </div>
                 </div>
               </div>
 
               {/* Target Status Selection */}
-              <div className="form-group">
-                <label className="form-label">Next Target Status (Enforced Operational Workflow)</label>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Select Next Step in Baggage Journey *
+                </label>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
                   {(VALID_NEXT_STEPS[activeBaggage.currentStatus] || []).map((step) => {
                     const isSelected = targetStatus === step;
+                    const label = STEP_LABELS[step] || step.replace(/_/g, ' ');
                     return (
                       <button
                         type="button"
                         key={step}
                         onClick={() => setTargetStatus(step)}
                         style={{
-                          padding: '0.5rem 0.85rem',
+                          padding: '0.6rem 1rem',
                           borderRadius: '8px',
-                          border: isSelected ? '2px solid #0878F9' : '1px solid #D8E2EE',
+                          border: isSelected ? '2px solid #0878F9' : '1px solid #CBD5E1',
                           backgroundColor: isSelected ? '#EFF6FF' : '#FFFFFF',
                           color: isSelected ? '#0878F9' : '#334155',
-                          fontWeight: isSelected ? 700 : 500,
-                          fontSize: '0.8rem',
+                          fontWeight: isSelected ? 800 : 600,
+                          fontSize: '0.825rem',
                           cursor: 'pointer',
+                          transition: 'all 120ms ease',
                         }}
                       >
-                        &rarr; {step}
+                        &rarr; {label}
                       </button>
                     );
                   })}
@@ -463,31 +466,37 @@ export const BaggageHandlingPage: React.FC = () => {
               </div>
 
               {/* Handling Point Selection */}
-              <div className="form-group">
-                <label className="form-label">Target Airport Handling Point</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Checkpoint Location *
+                </label>
                 <select
                   className="form-select"
                   value={targetPointId}
                   onChange={(e) => setTargetPointId(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                   required
                 >
                   {handlingPoints.map((hp) => (
                     <option key={hp.id} value={hp.id}>
-                      {hp.id} &bull; {hp.name} ({hp.zone})
+                      {getFriendlyLocationName(hp.id, hp.name)} [{hp.id}]
                     </option>
                   ))}
                 </select>
               </div>
 
               {/* Operator Notes */}
-              <div className="form-group">
-                <label className="form-label">Operational Transition Note (Optional)</label>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>
+                  Handling Notes (Optional)
+                </label>
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Scanned at security X-ray belt 2, cleared for sorting loop"
+                  placeholder="e.g. Scanned at security X-ray belt, cleared for flight sorting"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                 />
               </div>
 
@@ -504,17 +513,17 @@ export const BaggageHandlingPage: React.FC = () => {
                   type="submit"
                   disabled={transitioning || !targetStatus}
                   className="btn btn-primary"
-                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontWeight: 700, borderRadius: '8px' }}
                 >
                   {transitioning ? (
                     <>
                       <RefreshCw size={14} className="spin" />
-                      <span>Recording Movement...</span>
+                      <span>Saving Status...</span>
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 size={15} />
-                      <span>Execute Stage Transition</span>
+                      <CheckCircle2 size={16} />
+                      <span>Confirm Status Update</span>
                     </>
                   )}
                 </button>
@@ -526,3 +535,4 @@ export const BaggageHandlingPage: React.FC = () => {
     </div>
   );
 };
+

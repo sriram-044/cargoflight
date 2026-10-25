@@ -73,7 +73,7 @@ public class ScanProcessingService {
         boolean mongoPersisted = false;
         boolean isDuplicate = false;
 
-        if (mongoTelemetryRepository != null) {
+        if (mongodbConfigured && mongoTelemetryRepository != null) {
             try {
                 Optional<RawScannerEventDocument> existingEvent = mongoTelemetryRepository.findByIdempotencyKey(idempotencyKey);
                 if (existingEvent.isPresent()) {
@@ -163,7 +163,7 @@ public class ScanProcessingService {
     }
 
     private void recordDeadLetter(String tag, String reason) {
-        if (mongoTemplate != null) {
+        if (mongodbConfigured && mongoTemplate != null) {
             try {
                 DeadLetterQueueDocument dlq = new DeadLetterQueueDocument();
                 dlq.setBaggageTag(tag);

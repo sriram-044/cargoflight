@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ExperienceModeProvider } from './context/ExperienceModeContext';
 import { AppShell } from './components/layout/AppShell';
 
 // Pages
@@ -21,7 +22,8 @@ import { SettingsPage } from './pages/Settings/SettingsPage';
 export const App: React.FC = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <ExperienceModeProvider>
+        <BrowserRouter>
         <Routes>
           {/* Redirect legacy /login route directly to the CARGOFLIGHT dashboard */}
           <Route path="/login" element={<Navigate to="/" replace />} />
@@ -43,6 +45,7 @@ export const App: React.FC = () => {
 
             {/* 5. Route Optimization */}
             <Route path="/routes" element={<RouteExplorerPage />} />
+            <Route path="/route-explorer" element={<Navigate to="/routes" replace />} />
 
             {/* 6. Terminal Management */}
             <Route path="/terminals" element={<HandlingPointsPage />} />
@@ -74,6 +77,7 @@ export const App: React.FC = () => {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </ExperienceModeProvider>
     </AuthProvider>
   );
 };

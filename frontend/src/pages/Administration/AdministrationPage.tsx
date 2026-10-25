@@ -14,6 +14,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   UserPlus,
+  Mail,
+  Shield,
+  Key,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -108,71 +111,89 @@ export const AdministrationPage: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="card" style={{ padding: '3rem', textAlign: 'center', maxWidth: '600px', margin: '2rem auto' }}>
-        <Lock size={36} color="#dc2626" style={{ margin: '0 auto 1rem' }} />
-        <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#0f172a' }}>
-          Access Restricted
+      <div className="card" style={{ padding: '3.5rem 2rem', textAlign: 'center', maxWidth: '640px', margin: '3rem auto', borderRadius: '14px', backgroundColor: '#FFFFFF', boxShadow: 'var(--shadow-card)' }}>
+        <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: '#FEF2F2', color: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+          <Lock size={32} />
+        </div>
+        <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A' }}>
+          Restricted Security Console
         </h2>
-        <p style={{ color: '#64748b', fontSize: '0.875rem', marginTop: '0.35rem' }}>
-          This console is strictly restricted to authenticated <strong>SYSTEM_ADMIN</strong> and <strong>OPERATIONS_MANAGER</strong> roles.
+        <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '0.5rem', lineHeight: 1.5 }}>
+          Staff management and security audit trail are strictly restricted to authenticated <strong>SYSTEM_ADMIN</strong> and <strong>OPERATIONS_MANAGER</strong> credentials.
         </p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Users size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              Users, Roles & Security Audit
-            </h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>ROLE-BASED ACCESS CONTROL (RBAC)</span>
+            </div>
+            <h1 className="airport-hero-title">User Permissions & Staff Management</h1>
+            <p className="airport-hero-subtitle">
+              Manage airport staff credentials, assign operational permissions, and audit system activities at Chennai Airport Hub (MAA).
+            </p>
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Role-based authorization control (RBAC), operator credential policies, and compliance audit trail.
-          </p>
-        </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-          <button onClick={loadData} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <RefreshCw size={14} className={loading ? 'spin' : ''} />
-            <span>Refresh Records</span>
-          </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="btn btn-primary btn-sm"
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-          >
-            <UserPlus size={15} />
-            <span>Add Operator</span>
-          </button>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={loadData}
+              disabled={loading}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>Refresh</span>
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="btn btn-primary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+            >
+              <UserPlus size={15} />
+              <span>Add Staff Member</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {actionFeedback && (
-        <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', borderRadius: '8px', color: '#065F46', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <CheckCircle2 size={16} />
+        <div
+          style={{
+            padding: '1rem 1.25rem',
+            backgroundColor: '#ECFDF5',
+            border: '1px solid #A7F3D0',
+            borderRadius: '10px',
+            color: '#065F46',
+            fontSize: '0.875rem',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.65rem',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          <CheckCircle2 size={18} color="#10B981" />
           <span>{actionFeedback}</span>
         </div>
       )}
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', color: '#EF4444', fontSize: '0.85rem' }}>
+        <div style={{ padding: '1rem 1.25rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', color: '#EF4444', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
@@ -182,140 +203,178 @@ export const AdministrationPage: React.FC = () => {
         <button
           onClick={() => setActiveTab('users')}
           className={`btn btn-sm ${activeTab === 'users' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', borderRadius: '8px', fontWeight: 700 }}
         >
-          <Users size={14} />
-          <span>Authorized Personnel ({users.length})</span>
+          <Users size={15} />
+          <span>Airport Staff Accounts ({users.length})</span>
         </button>
         <button
           onClick={() => setActiveTab('audit')}
           className={`btn btn-sm ${activeTab === 'audit' ? 'btn-primary' : 'btn-secondary'}`}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', borderRadius: '8px', fontWeight: 700 }}
         >
-          <History size={14} />
-          <span>Compliance Audit Trail ({auditLogs.length})</span>
+          <History size={15} />
+          <span>Activity Audit History ({auditLogs.length})</span>
         </button>
       </div>
 
       {loading ? (
         <LoadingSkeleton rows={6} />
       ) : activeTab === 'users' ? (
-        <div className="card">
-          <div className="card-header">
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#14233B' }}>
-              Active Personnel & Credentials ({users.length})
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+          <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#14233B' }}>
+                Staff Accounts & Role Assignments ({users.length})
+              </div>
+              <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+                Authorized operations staff with active credentials at Chennai Hub
+              </span>
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-              BCrypt-Hashed PostgreSQL User Accounts
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#0878F9', backgroundColor: '#EFF6FF', padding: '0.25rem 0.65rem', borderRadius: '6px' }}>
+              Station MAA
             </span>
           </div>
 
           <div className="table-responsive">
-            <table className="table">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>Username</th>
-                  <th>Full Name</th>
-                  <th>Email</th>
-                  <th>Assigned Role</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Staff Member</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Full Name</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Email Contact</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Assigned Role</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Status</th>
+                  <th style={{ padding: '0.85rem 1.25rem', textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map((u) => (
-                  <tr key={u.id}>
-                    <td>
-                      <div style={{ fontWeight: 800, color: '#0878F9' }}>{u.username}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#64748B' }}>Station: {u.airport || 'MAA'}</div>
-                    </td>
-                    <td style={{ fontWeight: 600, color: '#14233B' }}>{u.fullName}</td>
-                    <td style={{ fontSize: '0.8125rem', color: '#475569' }}>{u.email || `${u.username}@cargoflight.aero`}</td>
-                    <td>
-                      <select
-                        className="form-select"
-                        style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.75rem', fontWeight: 600 }}
-                        value={u.role}
-                        onChange={(e) => handleRoleChange(u.id, e.target.value)}
-                      >
-                        <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
-                        <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER</option>
-                        <option value="FLIGHT_OPERATOR">FLIGHT_OPERATOR</option>
-                        <option value="BAGGAGE_HANDLER">BAGGAGE_HANDLER</option>
-                        <option value="SECURITY_OFFICER">SECURITY_OFFICER</option>
-                        <option value="ANALYST">ANALYST</option>
-                        <option value="DATABASE_ADMIN">DATABASE_ADMIN</option>
-                        <option value="VIEWER">VIEWER</option>
-                      </select>
-                    </td>
-                    <td>
-                      <span
-                        style={{
-                          fontSize: '0.7rem',
-                          padding: '0.2rem 0.5rem',
-                          borderRadius: '12px',
-                          fontWeight: 700,
-                          backgroundColor: u.active ? '#ECFDF5' : '#FEF2F2',
-                          color: u.active ? '#065F46' : '#991B1B',
-                        }}
-                      >
-                        {u.active ? 'ACTIVE' : 'SUSPENDED'}
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        onClick={() => handleToggleUserStatus(u)}
-                        className={`btn btn-sm ${u.active ? 'btn-danger' : 'btn-secondary'}`}
-                        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-                      >
-                        <Power size={12} />
-                        <span>{u.active ? 'Suspend' : 'Activate'}</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {users.map((u) => {
+                  const initials = (u.fullName || u.username || 'U')
+                    .split(' ')
+                    .map((n: string) => n[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase();
+
+                  return (
+                    <tr key={u.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                          <div
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              backgroundColor: '#EFF6FF',
+                              color: '#0878F9',
+                              border: '1px solid #BFDBFE',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontWeight: 800,
+                              fontSize: '0.8rem',
+                            }}
+                          >
+                            {initials}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 800, color: '#0878F9' }}>{u.username}</div>
+                            <div style={{ fontSize: '0.725rem', color: '#64748B' }}>Station: {u.airport || 'MAA'}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', fontWeight: 700, color: '#14233B', fontSize: '0.875rem' }}>{u.fullName}</td>
+                      <td style={{ padding: '1rem 1.25rem', fontSize: '0.825rem', color: '#475569' }}>
+                        {u.email || `${u.username}@flytrack.aero`}
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <select
+                          className="form-select"
+                          style={{ width: 'auto', padding: '0.35rem 0.65rem', fontSize: '0.8rem', fontWeight: 700, borderRadius: '8px' }}
+                          value={u.role}
+                          onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                        >
+                          <option value="SYSTEM_ADMIN">System Administrator</option>
+                          <option value="OPERATIONS_MANAGER">Operations Manager</option>
+                          <option value="FLIGHT_OPERATOR">Flight Operations Staff</option>
+                          <option value="BAGGAGE_HANDLER">Baggage Handler / Ramp Staff</option>
+                          <option value="SECURITY_OFFICER">Security & Inspection Officer</option>
+                          <option value="ANALYST">Operations Analyst</option>
+                          <option value="DATABASE_ADMIN">Database Administrator</option>
+                          <option value="VIEWER">Read-Only Viewer</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.25rem 0.65rem',
+                            borderRadius: '12px',
+                            fontWeight: 800,
+                            backgroundColor: u.active ? '#ECFDF5' : '#FEF2F2',
+                            color: u.active ? '#065F46' : '#991B1B',
+                            border: `1px solid ${u.active ? '#A7F3D0' : '#FECACA'}`,
+                          }}
+                        >
+                          {u.active ? 'ACTIVE' : 'SUSPENDED'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleToggleUserStatus(u)}
+                          className={`btn btn-sm ${u.active ? 'btn-danger' : 'btn-secondary'}`}
+                          style={{ fontSize: '0.775rem', padding: '0.35rem 0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', borderRadius: '8px' }}
+                        >
+                          <Power size={13} />
+                          <span>{u.active ? 'Suspend Account' : 'Activate Account'}</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </div>
       ) : (
-        <div className="card">
-          <div className="card-header">
-            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#14233B' }}>
-              Immutable Compliance Audit Logs ({auditLogs.length})
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+          <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: '#14233B' }}>
+              System Activity History & Audit Trail ({auditLogs.length})
             </div>
-            <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-              Append-Only Operational Audit Trail
+            <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+              Tamper-evident log of operational changes, baggage status updates, and security authorizations
             </span>
           </div>
 
           <div className="table-responsive">
-            <table className="table">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>Timestamp (IST)</th>
-                  <th>Operator</th>
-                  <th>Action Triggered</th>
-                  <th>Target Entity</th>
-                  <th>Audit Details</th>
-                  <th>IP Address</th>
+                <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Timestamp</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Staff Member</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Action</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Record Type</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Details</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>IP Address</th>
                 </tr>
               </thead>
               <tbody>
                 {auditLogs.map((log) => (
-                  <tr key={log.id}>
-                    <td style={{ fontSize: '0.75rem', color: '#64748B', whiteSpace: 'nowrap' }}>
+                  <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.8rem', color: '#64748B', whiteSpace: 'nowrap' }}>
                       {new Date(log.createdAt).toLocaleString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false })}
                     </td>
-                    <td style={{ fontWeight: 700, color: '#14233B' }}>{log.username}</td>
-                    <td>
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: 800, color: '#0878F9' }}>{log.username}</td>
+                    <td style={{ padding: '1rem 1.25rem' }}>
                       <StatusBadge status={log.action} size="sm" />
                     </td>
-                    <td style={{ fontSize: '0.8125rem' }}>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.825rem', fontWeight: 600, color: '#334155' }}>
                       {log.entityType} ({log.entityId || 'N/A'})
                     </td>
-                    <td style={{ fontSize: '0.8125rem', color: '#334155' }}>{log.details}</td>
-                    <td style={{ fontSize: '0.75rem', fontFamily: 'monospace', color: '#64748B' }}>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.825rem', color: '#334155' }}>{log.details}</td>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.785rem', fontFamily: 'monospace', color: '#64748B' }}>
                       {log.ipAddress}
                     </td>
                   </tr>
@@ -326,7 +385,7 @@ export const AdministrationPage: React.FC = () => {
         </div>
       )}
 
-      {/* Add Operator Modal */}
+      {/* Add Staff Modal */}
       {showCreateModal && (
         <div
           style={{
@@ -335,86 +394,94 @@ export const AdministrationPage: React.FC = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(6, 24, 45, 0.65)',
+            backgroundColor: 'rgba(3, 17, 31, 0.75)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 100,
+            zIndex: 1000,
             padding: '1.5rem',
+            backdropFilter: 'blur(4px)',
           }}
         >
-          <div className="card" style={{ width: '100%', maxWidth: '480px', backgroundColor: '#FFFFFF' }}>
-            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF' }}>
-              <div style={{ fontSize: '1.05rem', fontWeight: 800 }}>Create Authorized Operator</div>
+          <div className="card" style={{ width: '100%', maxWidth: '520px', backgroundColor: '#FFFFFF', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            <div className="card-header" style={{ backgroundColor: '#03111F', color: '#FFFFFF', padding: '1.25rem 1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>Create New Staff Account</div>
+                <div style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.15rem' }}>Add an operator to the Chennai Hub staff directory</div>
+              </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer' }}
+                style={{ border: 'none', background: 'transparent', color: '#94A3B8', cursor: 'pointer', padding: '0.25rem' }}
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleCreateUser} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <form onSubmit={handleCreateUser} style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="form-group">
-                <label className="form-label">Username</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Username *</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="e.g. flight_ops_1"
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Full Name</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Full Name *</label>
                 <input
                   type="text"
                   className="form-input"
                   placeholder="e.g. Rajesh Kumar"
                   value={newFullName}
                   onChange={(e) => setNewFullName(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Initial Password</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Initial Password *</label>
                 <input
                   type="password"
                   className="form-input"
                   placeholder="Minimum 8 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label">Role Assignment</label>
+                <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Role & Permission Level *</label>
                 <select
                   className="form-select"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
+                  style={{ height: '42px', borderRadius: '8px' }}
                   required
                 >
-                  <option value="BAGGAGE_HANDLER">BAGGAGE_HANDLER</option>
-                  <option value="FLIGHT_OPERATOR">FLIGHT_OPERATOR</option>
-                  <option value="SECURITY_OFFICER">SECURITY_OFFICER</option>
-                  <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER</option>
-                  <option value="ANALYST">ANALYST</option>
-                  <option value="DATABASE_ADMIN">DATABASE_ADMIN</option>
-                  <option value="SYSTEM_ADMIN">SYSTEM_ADMIN</option>
-                  <option value="VIEWER">VIEWER</option>
+                  <option value="BAGGAGE_HANDLER">BAGGAGE_HANDLER — Baggage Handler / Ramp Staff</option>
+                  <option value="FLIGHT_OPERATOR">FLIGHT_OPERATOR — Flight Operations Staff</option>
+                  <option value="SECURITY_OFFICER">SECURITY_OFFICER — Security & Inspection Officer</option>
+                  <option value="OPERATIONS_MANAGER">OPERATIONS_MANAGER — Operations Manager</option>
+                  <option value="ANALYST">ANALYST — Operations Analyst</option>
+                  <option value="DATABASE_ADMIN">DATABASE_ADMIN — Database Administrator</option>
+                  <option value="SYSTEM_ADMIN">SYSTEM_ADMIN — System Administrator</option>
+                  <option value="VIEWER">VIEWER — Read-Only Viewer</option>
                 </select>
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.75rem' }}>
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn btn-secondary">
                   Cancel
                 </button>
-                <button type="submit" disabled={creatingUser} className="btn btn-primary">
+                <button type="submit" disabled={creatingUser} className="btn btn-primary" style={{ fontWeight: 700 }}>
                   {creatingUser ? 'Creating...' : 'Create Account'}
                 </button>
               </div>
@@ -425,3 +492,4 @@ export const AdministrationPage: React.FC = () => {
     </div>
   );
 };
+

@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Clock,
   Radio,
+  SlidersHorizontal,
+  Monitor,
 } from 'lucide-react';
 
 export const SettingsPage: React.FC = () => {
@@ -98,99 +100,114 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Page Title */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <SettingsIcon size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              System & Operational Settings
-            </h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>SYSTEM CONFIGURATION & OPERATIONAL POLICIES</span>
+            </div>
+            <h1 className="airport-hero-title">Settings</h1>
+            <p className="airport-hero-subtitle">
+              Configure airport hub defaults, delay warning thresholds, cloud telemetry retention, and screen preferences.
+            </p>
           </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Configure authoritative airport defaults, baggage delay alert thresholds, telemetry ingestion, and database engine modes.
-          </p>
-        </div>
 
-        <button
-          onClick={fetchSettings}
-          disabled={loading}
-          className="btn btn-secondary btn-sm"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-        >
-          <RefreshCw size={14} className={loading ? 'spin' : ''} />
-          <span>Reload Config</span>
-        </button>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              onClick={fetchSettings}
+              disabled={loading}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>Reload Settings</span>
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving || !isAdmin}
+              className="btn btn-primary btn-sm"
+              style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+            >
+              {saving ? <RefreshCw size={14} className="spin" /> : <Save size={14} />}
+              <span>{saving ? 'Saving...' : 'Save All Changes'}</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {feedback && (
         <div
           style={{
-            padding: '1rem 1.25rem',
-            borderRadius: '8px',
-            fontSize: '0.875rem',
+            padding: '1.25rem 1.5rem',
+            borderRadius: '12px',
+            fontSize: '0.9rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.65rem',
+            gap: '0.75rem',
             backgroundColor: feedback.type === 'success' ? '#ECFDF5' : '#FEF2F2',
             border: `1px solid ${feedback.type === 'success' ? '#A7F3D0' : '#FECACA'}`,
             color: feedback.type === 'success' ? '#065F46' : '#991B1B',
+            fontWeight: 700,
+            boxShadow: 'var(--shadow-card)',
           }}
         >
-          {feedback.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+          {feedback.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
           <span>{feedback.message}</span>
         </div>
       )}
 
       <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Section 1: Airport Operations & Thresholds */}
-        <div className="card">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Building2 size={18} color="#0878F9" />
-            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Airport Operations & Thresholds</span>
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+          <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <Building2 size={20} color="#0878F9" />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>Airport Defaults & Delay Thresholds</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Primary hub identification and automated baggage warning timers</div>
+            </div>
           </div>
-          <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+          <div className="card-body" style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             <div className="form-group">
-              <label className="form-label">Default Airport IATA Hub</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Default Airport Code</label>
               <input
                 type="text"
                 className="form-input"
                 value={settings.AIRPORT_DEFAULT_CODE || 'MAA'}
                 onChange={(e) => handleChange('AIRPORT_DEFAULT_CODE', e.target.value.toUpperCase())}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
                 required
               />
-              <span className="form-hint">Authoritative three-letter IATA station code</span>
+              <span className="form-hint">3-letter IATA code (e.g. MAA for Chennai International)</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Primary Handling Terminal</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Default Terminal</label>
               <input
                 type="text"
                 className="form-input"
                 value={settings.TERMINAL_DEFAULT || 'Terminal 2 (Domestic & International)'}
                 onChange={(e) => handleChange('TERMINAL_DEFAULT', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
                 required
               />
-              <span className="form-hint">Primary operational sorting terminal at MAA</span>
+              <span className="form-hint">Terminal where check-in and transfer induction belts operate</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Baggage Delay Threshold (Minutes)</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Delay Warning Trigger (Minutes)</label>
               <input
                 type="number"
                 min="5"
@@ -199,63 +216,70 @@ export const SettingsPage: React.FC = () => {
                 value={settings.BAGGAGE_DELAY_THRESHOLD_MINUTES || '45'}
                 onChange={(e) => handleChange('BAGGAGE_DELAY_THRESHOLD_MINUTES', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
                 required
               />
-              <span className="form-hint">Time without scan before flagging baggage as Delayed Exception</span>
+              <span className="form-hint">Minutes without a checkpoint scan before triggering an automated operational alert</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Operational Timezone</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Timezone</label>
               <input
                 type="text"
                 className="form-input"
                 value={settings.TIMEZONE_DEFAULT || 'Asia/Kolkata'}
                 onChange={(e) => handleChange('TIMEZONE_DEFAULT', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
                 required
               />
-              <span className="form-hint">Timezone applied for console display (Timestamps stored in UTC)</span>
+              <span className="form-hint">Standard airport timezone for flight departures and scan logs</span>
             </div>
           </div>
         </div>
 
         {/* Section 2: Database Architecture & Ingestion */}
-        <div className="card">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Database size={18} color="#00C2D7" />
-            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>3-Database Architecture & Integrations</span>
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+          <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <Database size={20} color="#00C2D7" />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>Multi-Database Telemetry & Routing</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>MongoDB Atlas telemetry parameters, Neo4j routing fallback, and data warehouse sync</div>
+            </div>
           </div>
-          <div className="card-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+          <div className="card-body" style={{ padding: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
             <div className="form-group">
-              <label className="form-label">MongoDB Telemetry Ingestion</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Scanner Telemetry Storage (MongoDB Atlas)</label>
               <select
                 className="form-select"
                 value={settings.TELEMETRY_STORAGE_ENABLED || 'true'}
                 onChange={(e) => handleChange('TELEMETRY_STORAGE_ENABLED', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
               >
-                <option value="true">Enabled (Persist raw scan events with 7-day TTL)</option>
-                <option value="false">Disabled (Operational PostgreSQL only)</option>
+                <option value="true">Enabled (Stream all barcode & RFID scans to MongoDB Atlas)</option>
+                <option value="false">Disabled (Record latest state in PostgreSQL only)</option>
               </select>
-              <span className="form-hint">Store raw RFID/barcode scanner device telemetry in MongoDB</span>
+              <span className="form-hint">Persists high-frequency optical scans to cloud document store</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Route Optimization Engine</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Route Calculation Method</label>
               <select
                 className="form-select"
                 value={settings.GRAPH_ROUTING_ENGINE || 'NEO4J_WITH_PG_FALLBACK'}
                 onChange={(e) => handleChange('GRAPH_ROUTING_ENGINE', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
               >
-                <option value="NEO4J_WITH_PG_FALLBACK">Neo4j Cypher with PostgreSQL Dijkstra Fallback</option>
-                <option value="POSTGRES_TOPOLOGY_SOLVER">Deterministic PostgreSQL Solver Only</option>
+                <option value="NEO4J_WITH_PG_FALLBACK">Neo4j Graph Database (with Dijkstra fallback)</option>
+                <option value="POSTGRES_TOPOLOGY_SOLVER">In-Memory Dijkstra Solver Only</option>
               </select>
-              <span className="form-hint">Pathfinding strategy for conveyor and tug cart routing</span>
+              <span className="form-hint">Primary engine used to find the optimal conveyor path</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Warehouse Refresh Cadence (Minutes)</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Warehouse Sync Interval (Minutes)</label>
               <input
                 type="number"
                 min="5"
@@ -264,12 +288,13 @@ export const SettingsPage: React.FC = () => {
                 value={settings.AUTO_SYNC_INTERVAL_MINUTES || '15'}
                 onChange={(e) => handleChange('AUTO_SYNC_INTERVAL_MINUTES', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
               />
-              <span className="form-hint">Scheduled refresh rate for PostgreSQL cargoflight_dw schema</span>
+              <span className="form-hint">Frequency of analytical ETL sync to <code>cargoflight_dw</code></span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Audit Log Retention Policy (Days)</label>
+              <label className="form-label" style={{ fontWeight: 700, fontSize: '0.85rem' }}>Audit Log Retention (Days)</label>
               <input
                 type="number"
                 min="30"
@@ -278,45 +303,49 @@ export const SettingsPage: React.FC = () => {
                 value={settings.AUDIT_RETENTION_DAYS || '90'}
                 onChange={(e) => handleChange('AUDIT_RETENTION_DAYS', e.target.value)}
                 disabled={!isAdmin}
+                style={{ height: '42px', borderRadius: '8px' }}
               />
-              <span className="form-hint">Security journal preservation window</span>
+              <span className="form-hint">Retention duration for operator security audit trail</span>
             </div>
           </div>
         </div>
 
         {/* Section 3: Browser Client Preferences */}
-        <div className="card">
-          <div className="card-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Sliders size={18} color="#10B981" />
-            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>Local Display Preferences (Current Browser)</span>
+        <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+          <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <Monitor size={20} color="#10B981" />
+            <div>
+              <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>Display & Browser Preferences</div>
+              <div style={{ fontSize: '0.75rem', color: '#64748B' }}>Personal screen preferences stored locally in this browser</div>
+            </div>
           </div>
-          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+          <div className="card-body" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', cursor: 'pointer', padding: '1rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
               <input
                 type="checkbox"
                 checked={localAutoRefresh}
                 onChange={(e) => setLocalAutoRefresh(e.target.checked)}
-                style={{ width: '18px', height: '18px', accentColor: '#0878F9' }}
+                style={{ width: '18px', height: '18px', accentColor: '#0878F9', marginTop: '2px' }}
               />
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Auto-Refresh Operational Monitors</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                  Poll backend API every 15 seconds on Dashboard and Live Scan simulator.
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A' }}>Automatically refresh tracking and flight tables</div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '0.15rem' }}>
+                  Polls the Spring Boot REST backend every 15 seconds for live baggage scans and flight status updates.
                 </div>
               </div>
             </label>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.85rem', cursor: 'pointer', padding: '1rem', backgroundColor: '#F8FAFD', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
               <input
                 type="checkbox"
                 checked={denseTables}
                 onChange={(e) => setDenseTables(e.target.checked)}
-                style={{ width: '18px', height: '18px', accentColor: '#0878F9' }}
+                style={{ width: '18px', height: '18px', accentColor: '#0878F9', marginTop: '2px' }}
               />
               <div>
-                <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>Compact Table Rows</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748B' }}>
-                  Reduces table row padding for high-density airport operations displays.
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0F172A' }}>Compact high-density table view</div>
+                <div style={{ fontSize: '0.8rem', color: '#64748B', marginTop: '0.15rem' }}>
+                  Reduces vertical row padding to display more flight manifests and baggage rows simultaneously on operations wall monitors.
                 </div>
               </div>
             </label>
@@ -326,9 +355,9 @@ export const SettingsPage: React.FC = () => {
         {/* Action Button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', alignItems: 'center' }}>
           {!isAdmin && (
-            <div style={{ fontSize: '0.8rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <Shield size={14} color="#F59E0B" />
-              <span>Settings are read-only for your current role. Sign in as Admin to edit.</span>
+            <div style={{ fontSize: '0.85rem', color: '#64748B', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+              <Shield size={16} color="#F59E0B" />
+              <span>Operational settings are read-only for your current role. Sign in as Admin to edit.</span>
             </div>
           )}
           <button
@@ -336,18 +365,20 @@ export const SettingsPage: React.FC = () => {
             disabled={saving || !isAdmin}
             className="btn btn-primary"
             style={{
-              padding: '0.65rem 1.5rem',
+              padding: '0.75rem 2rem',
               display: 'flex',
               alignItems: 'center',
               gap: '0.5rem',
-              fontWeight: 600,
+              fontWeight: 700,
+              borderRadius: '10px',
             }}
           >
             {saving ? <RefreshCw size={16} className="spin" /> : <Save size={16} />}
-            <span>Save Operational Settings</span>
+            <span>Save Settings</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+

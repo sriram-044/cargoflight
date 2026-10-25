@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +35,16 @@ public class WarehouseController {
     public ResponseEntity<ApiResponse<WarehouseService.WarehouseStatusDto>> getWarehouseStatus() {
         WarehouseService.WarehouseStatusDto status = warehouseService.getWarehouseStatus();
         return ResponseEntity.ok(ApiResponse.ok(status));
+    }
+
+    @GetMapping("/metrics")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getWarehouseMetrics() {
+        Map<String, Object> metrics = new HashMap<>();
+        metrics.put("status", warehouseService.getWarehouseStatus());
+        metrics.put("volumeByTerminal", warehouseService.getTerminalVolumeOlap());
+        metrics.put("flightPerformance", warehouseService.getFlightPerformanceOlap());
+        metrics.put("durationByStage", warehouseService.getStageDurationOlap());
+        return ResponseEntity.ok(ApiResponse.ok(metrics));
     }
 
     @GetMapping("/olap/terminals")

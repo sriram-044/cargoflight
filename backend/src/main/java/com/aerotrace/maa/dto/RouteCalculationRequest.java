@@ -12,7 +12,7 @@ public class RouteCalculationRequest {
     private String destinationPointId;
 
     private List<String> blockedConnectionIds;
-    private String optimizationObjective = "DISTANCE"; // "DISTANCE" or "TIME"
+    private String optimizationObjective = "DISTANCE"; // DISTANCE, TIME, CONGESTION, MAINTENANCE, BALANCED
 
     public RouteCalculationRequest() {}
 
@@ -31,12 +31,22 @@ public class RouteCalculationRequest {
     public String getOriginPointId() { return originPointId; }
     public void setOriginPointId(String originPointId) { this.originPointId = originPointId; }
 
+    // Alias for originId
+    public String getOriginId() { return originPointId; }
+    public void setOriginId(String originId) { this.originPointId = originId; }
+
     public String getDestinationPointId() { return destinationPointId; }
     public void setDestinationPointId(String destinationPointId) { this.destinationPointId = destinationPointId; }
+
+    // Alias for destinationId
+    public String getDestinationId() { return destinationPointId; }
+    public void setDestinationId(String destinationId) { this.destinationPointId = destinationId; }
 
     public List<String> getBlockedConnectionIds() { return blockedConnectionIds; }
     public void setBlockedConnectionIds(List<String> blockedConnectionIds) { this.blockedConnectionIds = blockedConnectionIds; }
 
     public String getOptimizationObjective() { return optimizationObjective; }
-    public void setOptimizationObjective(String optimizationObjective) { this.optimizationObjective = optimizationObjective; }
+    public void setOptimizationObjective(String optimizationObjective) {
+        this.optimizationObjective = optimizationObjective != null ? optimizationObjective.toUpperCase() : "DISTANCE";
+    }
 }

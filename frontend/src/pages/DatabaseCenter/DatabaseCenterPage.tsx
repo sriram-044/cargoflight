@@ -13,6 +13,10 @@ import {
   Info,
   Server,
   Layers,
+  Activity,
+  HardDrive,
+  Cpu,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -33,7 +37,7 @@ export const DatabaseCenterPage: React.FC = () => {
       const data = await api.getDatabaseHealth();
       setHealth(data);
     } catch (err: any) {
-      setError('Database verification check failed: ' + err.message);
+      setError('System status check failed: ' + (err.message || 'Service unavailable'));
     } finally {
       setLoading(false);
     }
@@ -49,187 +53,171 @@ export const DatabaseCenterPage: React.FC = () => {
       setDwMessage(null);
       setError('');
       const res: WarehouseRefreshResponse = await api.refreshWarehouse();
-      setDwMessage(`Warehouse ETL Refresh Completed: ${res.recordsProcessed} analytical facts loaded in ${res.durationMs} ms into schema cargoflight_dw.`);
+      setDwMessage(`Data Warehouse Refresh Completed: ${res.recordsProcessed} analytical records synchronized in ${res.durationMs} ms.`);
       loadHealth();
     } catch (err: any) {
-      setError('Warehouse OLAP refresh failed: ' + err.message);
+      setError('Data warehouse refresh failed: ' + (err.message || 'Service error'));
     } finally {
       setRefreshingDw(false);
     }
   };
 
-  return (
-    <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Header */}
-      <div
-        className="card"
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid #0878F9',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '1rem',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Database size={22} color="#0878F9" />
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#14233B' }}>
-              Distributed Databases & System Health
-            </h1>
-          </div>
-          <p style={{ color: '#64748B', fontSize: '0.85rem', marginTop: '0.25rem' }}>
-            Live connection verification for CARGOFLIGHT's 3-database runtime architecture: PostgreSQL, MongoDB, and Neo4j.
-          </p>
-        </div>
+  const getPlainEnglishDescription = (dbName: string) => {
+    if (dbName.toLowerCase().includes('postgres')) {
+      return 'The authoritative core database storing all passenger baggage files, flight manifests, and historical audit history.';
+    }
+    if (dbName.toLowerCase().includes('mongo')) {
+      return 'High-speed cloud telemetry database capturing every barcode and RFID scanner event in real-time.';
+    }
+    return 'Graph routing network calculating the fastest and safest routes between baggage handling belts.';
+  };
 
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <button onClick={loadHealth} disabled={loading} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <RefreshCw size={14} className={loading ? 'spin' : ''} />
-            <span>Re-verify 3 Databases</span>
-          </button>
-          {canRefreshWarehouse && (
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: '1540px', margin: '0 auto', width: '100%' }}>
+      {/* Modern Airport Hero Header */}
+      <div className="airport-hero">
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1.5rem' }}>
+          <div>
+            <div className="airport-hero-badge">
+              <span className="pulse-dot"></span>
+              <span>MULTI-DATABASE ARCHITECTURE & STATUS</span>
+            </div>
+            <h1 className="airport-hero-title">System Status</h1>
+            <p className="airport-hero-subtitle">
+              Verified real-time operational health for PostgreSQL (Master Data & OLAP Warehouse), MongoDB Atlas (Telemetry Stream), and Neo4j (Graph Conveyor Routing).
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <button
-              onClick={handleRefreshWarehouse}
-              disabled={refreshingDw}
-              className="btn btn-primary btn-sm"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              onClick={loadHealth}
+              disabled={loading}
+              className="btn btn-secondary btn-sm"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.45rem',
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: '#FFFFFF',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                backdropFilter: 'blur(10px)',
+              }}
             >
-              <Zap size={14} className={refreshingDw ? 'spin' : ''} />
-              <span>{refreshingDw ? 'Executing Warehouse ETL...' : 'Refresh PostgreSQL Warehouse'}</span>
+              <RefreshCw size={14} className={loading ? 'spin' : ''} />
+              <span>Check All Services</span>
             </button>
-          )}
+            {canRefreshWarehouse && (
+              <button
+                onClick={handleRefreshWarehouse}
+                disabled={refreshingDw}
+                className="btn btn-primary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}
+              >
+                <Zap size={14} className={refreshingDw ? 'spin' : ''} />
+                <span>{refreshingDw ? 'Synchronizing...' : 'Sync Data Warehouse'}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {dwMessage && (
         <div
           style={{
-            padding: '1rem',
+            padding: '1.25rem 1.5rem',
             backgroundColor: '#ECFDF5',
             border: '1px solid #A7F3D0',
-            borderRadius: '8px',
+            borderRadius: '12px',
             color: '#065F46',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.85rem',
-            fontWeight: 600,
+            gap: '0.75rem',
+            fontSize: '0.9rem',
+            fontWeight: 700,
+            boxShadow: 'var(--shadow-card)',
           }}
         >
-          <CheckCircle2 size={18} color="#10B981" />
+          <CheckCircle2 size={20} color="#10B981" />
           <span>{dwMessage}</span>
         </div>
       )}
 
       {error && (
-        <div style={{ padding: '1rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', color: '#EF4444', fontSize: '0.85rem' }}>
+        <div style={{ padding: '1rem 1.25rem', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', color: '#EF4444', fontSize: '0.875rem' }}>
           {error}
         </div>
       )}
 
-      {/* Architecture Rule Banner */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          padding: '0.85rem 1.25rem',
-          backgroundColor: '#FFFFFF',
-          border: '1px solid #D8E2EE',
-          borderRadius: '8px',
-          fontSize: '0.8125rem',
-          color: '#334155',
-          boxShadow: '0 1px 2px rgba(6, 24, 45, 0.04)',
-        }}
-      >
-        <Server size={18} color="#0878F9" style={{ flexShrink: 0 }} />
-        <span>
-          <strong>Three-Database Runtime Architecture:</strong> <strong>1. PostgreSQL 17</strong> is the authoritative operational master and hosts the dedicated <code>cargoflight_dw</code> OLAP star-schema. <strong>2. MongoDB 7.0</strong> stores high-volume raw scanner telemetry with 7-day TTL expiration. <strong>3. Neo4j 5.20</strong> stores the physical conveyor graph for path optimization. <em>(MySQL is not an active runtime dependency per project architecture rules).</em>
-        </span>
-      </div>
-
-      {/* Main Database Status Cards (Exactly 3 Databases) */}
+      {/* Main Database Status Cards */}
       {loading ? (
-        <LoadingSkeleton rows={3} height="120px" />
+        <LoadingSkeleton rows={3} height="140px" />
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '1.25rem' }}>
           {(health?.databases || []).map((db) => {
             const isPass = db.status === 'PASS';
             const isFail = db.status === 'FAIL';
-
-            let cardBorder = '#D8E2EE';
-            let badgeBg = '#F1F5F9';
-            let badgeText = '#475569';
-
-            if (isPass) {
-              cardBorder = '#A7F3D0';
-              badgeBg = '#ECFDF5';
-              badgeText = '#065F46';
-            } else if (isFail) {
-              cardBorder = '#FECACA';
-              badgeBg = '#FEF2F2';
-              badgeText = '#991B1B';
-            }
 
             return (
               <div
                 key={db.databaseName}
                 className="card"
                 style={{
-                  border: `1px solid ${cardBorder}`,
+                  borderRadius: '14px',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  boxShadow: '0 2px 4px rgba(6, 24, 45, 0.04)',
+                  backgroundColor: '#FFFFFF',
+                  boxShadow: 'var(--shadow-card)',
+                  overflow: 'hidden',
+                  borderTop: `4px solid ${isPass ? '#10B981' : isFail ? '#EF4444' : '#F59E0B'}`,
                 }}
               >
                 <div style={{ padding: '1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.85rem' }}>
                     <div>
                       <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#14233B' }}>
                         {db.databaseName}
                       </h3>
-                      <div style={{ fontSize: '0.7rem', color: '#0878F9', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                        ROLE: {db.role.replace(/_/g, ' ')}
+                      <div style={{ fontSize: '0.725rem', color: '#0878F9', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', marginTop: '0.2rem' }}>
+                        {db.role.replace(/_/g, ' ')}
                       </div>
                     </div>
                     <StatusBadge status={db.status} />
                   </div>
 
-                  <p style={{ fontSize: '0.8125rem', color: '#334155', marginBottom: '1.25rem', minHeight: '44px', lineHeight: 1.45 }}>
-                    {db.details}
+                  <p style={{ fontSize: '0.875rem', color: '#334155', marginBottom: '1.25rem', minHeight: '44px', lineHeight: 1.5 }}>
+                    {getPlainEnglishDescription(db.databaseName)}
                   </p>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.75rem', color: '#64748B', backgroundColor: '#F8FAFD', padding: '0.75rem', borderRadius: '6px' }}>
-                    <div>
-                      <strong>Safe Endpoint:</strong> <code>{db.endpointSafe}</code>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.55rem', fontSize: '0.8rem', color: '#64748B', backgroundColor: '#F8FAFD', padding: '1rem', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600 }}>Safe Endpoint:</span>
+                      <code style={{ color: '#0878F9', fontWeight: 700 }}>{db.endpointSafe}</code>
                     </div>
-                    <div>
-                      <strong>Verified Records / Facts:</strong> <span style={{ fontWeight: 700, color: '#14233B' }}>{db.recordCount.toLocaleString()}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600 }}>Verified Records:</span>
+                      <span style={{ fontWeight: 800, color: '#14233B' }}>{db.recordCount.toLocaleString()}</span>
                     </div>
-                    <div>
-                      <strong>Roundtrip Ping Latency:</strong> <span style={{ fontWeight: 700, color: '#0878F9' }}>{db.latencyMs} ms</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontWeight: 600 }}>Response Latency:</span>
+                      <span style={{ fontWeight: 800, color: '#0878F9' }}>{db.latencyMs} ms</span>
                     </div>
                   </div>
                 </div>
 
                 <div
                   style={{
-                    padding: '0.65rem 1.25rem',
+                    padding: '0.85rem 1.5rem',
                     backgroundColor: '#F8FAFD',
                     borderTop: '1px solid #E2E8F0',
-                    fontSize: '0.7rem',
+                    fontSize: '0.75rem',
                     color: '#64748B',
                     display: 'flex',
                     justifyContent: 'space-between',
                   }}
                 >
-                  <span>Health: <strong>{db.connected ? 'Connected' : 'Offline / Standby'}</strong></span>
-                  <span>Checked: {new Date(db.lastVerified).toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour12: false })} IST</span>
+                  <span>Service: <strong style={{ color: db.connected ? '#059669' : '#64748B' }}>{db.connected ? 'Operational & Connected' : 'Standby'}</strong></span>
+                  <span>Checked: {new Date(db.lastVerified).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true })}</span>
                 </div>
               </div>
             );
@@ -237,46 +225,49 @@ export const DatabaseCenterPage: React.FC = () => {
         </div>
       )}
 
-      {/* Formal Verification Table */}
-      <div className="card">
-        <div className="card-header">
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#14233B' }}>
+      {/* Verification Matrix Table */}
+      <div className="card" style={{ backgroundColor: '#FFFFFF', borderRadius: '14px', boxShadow: 'var(--shadow-card)', overflow: 'hidden' }}>
+        <div className="card-header" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #E2E8F0' }}>
+          <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#14233B' }}>
             System Architecture Verification Matrix
           </div>
-          <span style={{ fontSize: '0.75rem', color: '#64748B' }}>
-            Evaluated per Section 15 & Section 24 criteria
+          <span style={{ fontSize: '0.8rem', color: '#64748B' }}>
+            Multi-database operational verification for Chennai Airport Baggage Intelligence
           </span>
         </div>
         <div className="card-body" style={{ padding: 0 }}>
           <div className="table-responsive">
-            <table className="table">
+            <table className="table" style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
-                <tr>
-                  <th>Database System</th>
-                  <th>Configured Target</th>
-                  <th>Persistence Guarantee</th>
-                  <th>Role & Capabilities</th>
-                  <th>Ping Latency</th>
-                  <th>Evaluation</th>
+                <tr style={{ backgroundColor: '#F8FAFD', borderBottom: '1px solid #E2E8F0', textAlign: 'left', color: '#64748B', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Database Service</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Connection Endpoint</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Primary Responsibility</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Response Latency</th>
+                  <th style={{ padding: '0.85rem 1.25rem' }}>Health Status</th>
                 </tr>
               </thead>
               <tbody>
                 {(health?.databases || []).map((db) => (
-                  <tr key={db.databaseName}>
-                    <td style={{ fontWeight: 800, color: '#14233B' }}>{db.databaseName}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>{db.endpointSafe}</td>
-                    <td style={{ fontSize: '0.8125rem', color: '#334155' }}>
-                      {db.databaseName.includes('PostgreSQL')
-                        ? 'Authoritative ACID Operational + Star-Schema OLAP'
-                        : db.databaseName.includes('MongoDB')
-                        ? 'Telemetry Buffer with 7-Day TTL Policy'
-                        : 'Graph Topology with Dijkstra Fallback'}
+                  <tr key={db.databaseName} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '1rem 1.25rem', fontWeight: 800, color: '#14233B' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Database size={15} color="#0878F9" />
+                        <span>{db.databaseName}</span>
+                      </div>
                     </td>
-                    <td style={{ fontSize: '0.8125rem' }}>{db.role}</td>
-                    <td style={{ fontSize: '0.8125rem', fontWeight: 600, color: '#0878F9' }}>
+                    <td style={{ padding: '1rem 1.25rem', fontFamily: 'monospace', fontSize: '0.85rem', color: '#0878F9', fontWeight: 600 }}>{db.endpointSafe}</td>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.85rem', color: '#334155' }}>
+                      {db.databaseName.includes('PostgreSQL')
+                        ? 'Master Baggage Records + Data Warehouse (Port 5433)'
+                        : db.databaseName.includes('MongoDB')
+                        ? 'High-Volume Scanner Telemetry (MongoDB Atlas Cloud)'
+                        : 'Graph-Based Route Optimization (Neo4j / Dijkstra)'}
+                    </td>
+                    <td style={{ padding: '1rem 1.25rem', fontSize: '0.85rem', fontWeight: 700, color: '#0878F9' }}>
                       {db.latencyMs} ms
                     </td>
-                    <td>
+                    <td style={{ padding: '1rem 1.25rem' }}>
                       <StatusBadge status={db.status} size="sm" />
                     </td>
                   </tr>
@@ -289,3 +280,4 @@ export const DatabaseCenterPage: React.FC = () => {
     </div>
   );
 };
+

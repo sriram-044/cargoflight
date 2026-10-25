@@ -1,17 +1,25 @@
-# CARGOFLIGHT — Airport Cargo-Flight & Baggage Tracking System
+# FLYTRACK — Smart Airport Baggage Tracking & Flight Management System
 
-![CARGOFLIGHT](https://img.shields.io/badge/Airport-MAA%20Hub%20%7C%20Chennai-0878F9)
+> **"Your baggage journey, made simple."**
+
+![FlyTrack](https://img.shields.io/badge/Airport-MAA%20Hub%20%7C%20Chennai-0878F9)
 ![Stack](https://img.shields.io/badge/Tech-React%20%7C%20Spring%20Boot%20%7C%20PostgreSQL-10B981)
 ![Databases](https://img.shields.io/badge/3--DB%20Architecture-PostgreSQL%20%7C%20MongoDB%20%7C%20Neo4j-00C2D7)
-![Status](https://img.shields.io/badge/Status-Demonstration%20Ready-06182D)
+![Status](https://img.shields.io/badge/Status-FlyTrack%20Ready-06182D)
 
 ## 1. Executive Overview
 
-**CARGOFLIGHT** is a full-stack airport cargo-flight and baggage tracking system engineered to track baggage across its complete lifecycle:
-**Passenger Check-in &rarr; Security EDS Screening &rarr; Automated Sorter Core &rarr; Inter-Pier High-Speed Conveyors &rarr; Ramp Cart Staging &rarr; Aircraft Cargo Hold Loading &rarr; Flight Transit &rarr; Destination Inbound Unloading &rarr; Baggage Reclaim Carousel Collection.**
+**FLYTRACK** is a modern, intuitive airport baggage tracking and flight management system engineered to make baggage tracking accessible to everyday passengers while preserving complete, enterprise-grade capabilities for authorized airport operations staff.
+
+FlyTrack tracks baggage across each step of its journey:
+**Baggage Registered &rarr; Security Check &rarr; Sorted for Flight &rarr; Waiting to Be Loaded &rarr; Loaded Onto Aircraft &rarr; Flight Departed &rarr; Arrived at Destination &rarr; Unloaded from Aircraft &rarr; Ready for Collection &rarr; Collected.**
+
+FlyTrack features two coordinated experiences:
+- **Simple Mode**: A clear, distraction-free interface for passengers and general users to check baggage status, track baggage on a visual timeline, and view flights.
+- **Airport Operations Mode**: A comprehensive workspace for authorized airport personnel to update baggage statuses, register bags, calculate optimal conveyor routes, resolve exceptions, and inspect system telemetry.
 
 > [!NOTE]
-> All airport conveyor movements, x-ray screening events, and flights in this environment operate as **simulated operations** backed by authentic database records and real-time state machines. Physical RFID hardware, airline APIs, and aircraft transponder GPS are explicitly not connected.
+> All airport conveyor movements, x-ray screening events, and flights operate as simulated operations backed by authentic live database records and real-time state machines across PostgreSQL, MongoDB Atlas, and Neo4j. Physical RFID tags and airline flight control APIs are simulated.
 
 ---
 

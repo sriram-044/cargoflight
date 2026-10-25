@@ -11,7 +11,7 @@ spring:
 
   # Primary Database: PostgreSQL (Port 5433 Local / 5432 Docker)
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/aerotrace_india}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5433/cargoflight}
     username: ${SPRING_DATASOURCE_USERNAME:aerotrace_app}
     password: ${SPRING_DATASOURCE_PASSWORD:1234}
     driver-class-name: org.postgresql.Driver
@@ -43,7 +43,7 @@ spring:
   # Telemetry Database: MongoDB
   data:
     mongodb:
-      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/aerotrace_telemetry}
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/aerotrace_telemetry?serverSelectionTimeoutMS=1500&connectTimeoutMS=1500}
       auto-index-creation: false
 
   jackson:
@@ -61,6 +61,11 @@ management:
     health:
       show-details: when-authorized
       roles: SYSTEM_ADMIN,DATABASE_ADMIN
+  health:
+    mongo:
+      enabled: false
+    neo4j:
+      enabled: false
 
 # Aerotrace Specific Properties
 aerotrace:
@@ -80,13 +85,13 @@ aerotrace:
     uri: ${NEO4J_URI:bolt://localhost:7687}
     username: ${NEO4J_USERNAME:neo4j}
     password: ${NEO4J_PASSWORD:aerotrace_neo4j_2026}
-    enabled: ${NEO4J_ENABLED:true}
+    enabled: ${NEO4J_ENABLED:false}
   mysql:
     url: ${MYSQL_URL:jdbc:mysql://localhost:3306/aerotrace_secondary?useSSL=false&allowPublicKeyRetrieval=true}
     username: ${MYSQL_USERNAME:aerotrace_sync}
     password: ${MYSQL_PASSWORD:aerotrace_mysql_password_2026}
     enabled: ${MYSQL_ENABLED:false}
   mongodb:
-    enabled: ${MONGODB_ENABLED:true}
+    enabled: ${MONGODB_ENABLED:false}
   demo-mode:
     enabled: ${AEROTRACE_DEMO_MODE:true}
